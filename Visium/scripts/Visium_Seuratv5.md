@@ -38,43 +38,24 @@ glimpse(brain)
 ```
 
     ## Formal class 'Seurat' [package "SeuratObject"] with 13 slots
-    ##   ..@ assays      :List of 2
+    ##   ..@ assays      :List of 1
     ##   .. ..$ Spatial:Formal class 'Assay' [package "SeuratObject"] with 8 slots
-    ##   .. ..$ SCT    :Formal class 'SCTAssay' [package "Seurat"] with 9 slots
     ##   ..@ meta.data   :'data.frame': 2695 obs. of  10 variables:
     ##   .. ..$ orig.ident      : Factor w/ 1 level "SeuratProject": 1 1 1 1 1 1 1 1 1 1 ...
     ##   .. ..$ nCount_Spatial  : num [1:2695] 13991 39797 29951 42333 35700 ...
     ##   .. ..$ nFeature_Spatial: int [1:2695] 4462 8126 6526 8190 8090 6518 7731 7255 5075 9241 ...
-    ##   .. ..$ Genes_per_read  : num [1:2695] 0.319 0.204 0.218 0.193 0.227 ...
-    ##   .. ..$ nCount_SCT      : num [1:2695] 25223 26408 26842 26117 26595 ...
-    ##   .. ..$ nFeature_SCT    : int [1:2695] 4956 7600 6520 7469 7922 6515 7402 6979 5096 6668 ...
-    ##   .. ..$ SCT_snn_res.0.8 : Factor w/ 15 levels "0","1","2","3",..: 3 6 4 12 12 6 9 4 5 10 ...
-    ##   .. ..$ seurat_clusters : Factor w/ 15 levels "0","1","2","3",..: 3 6 4 12 12 6 9 4 5 10 ...
-    ##   .. ..$ cluster_subset  : Factor w/ 15 levels "0","1","2","3",..: 3 6 4 NA NA 6 9 4 5 NA ...
-    ##   .. ..$ test            : Factor w/ 15 levels "0","1","2","3",..: 3 6 4 12 12 6 9 4 5 10 ...
-    ##   ..@ active.assay: chr "SCT"
-    ##   ..@ active.ident: Factor w/ 15 levels "0","1","2","3",..: 3 6 4 12 12 6 9 4 5 10 ...
+    ##   ..@ active.ident: Factor w/ 1 level "SeuratProject": 1 1 1 1 1 1 1 1 1 1 ...
     ##   .. ..- attr(*, "names")= chr [1:2695] "AAACAAGTATCTCCCA-1" "AAACACCAATAACTGC-1" "AAACAGAGCGACTCCT-1" "AAACAGCTTTCAGAAG-1" ...
-    ##   ..@ graphs      :List of 2
-    ##   .. ..$ SCT_nn :Formal class 'Graph' [package "SeuratObject"] with 7 slots
-    ##   .. ..$ SCT_snn:Formal class 'Graph' [package "SeuratObject"] with 7 slots
+    ##   ..@ graphs      : list()
     ##   ..@ neighbors   : list()
-    ##   ..@ reductions  :List of 2
-    ##   .. ..$ pca :Formal class 'DimReduc' [package "SeuratObject"] with 9 slots
-    ##   .. ..$ umap:Formal class 'DimReduc' [package "SeuratObject"] with 9 slots
+    ##   ..@ reductions  : list()
     ##   ..@ images      :List of 1
     ##   .. ..$ slice1:Formal class 'VisiumV1' [package "Seurat"] with 6 slots
     ##   ..@ project.name: chr "SeuratProject"
     ##   ..@ misc        : list()
     ##   ..@ version     :Classes 'package_version', 'numeric_version'  hidden list of 1
     ##   .. ..$ : int [1:3] 4 1 3
-    ##   ..@ commands    :List of 6
-    ##   .. ..$ SCTransform.Spatial              :Formal class 'SeuratCommand' [package "SeuratObject"] with 5 slots
-    ##   .. ..$ RunPCA.SCT                       :Formal class 'SeuratCommand' [package "SeuratObject"] with 5 slots
-    ##   .. ..$ FindNeighbors.SCT.pca            :Formal class 'SeuratCommand' [package "SeuratObject"] with 5 slots
-    ##   .. ..$ FindClusters                     :Formal class 'SeuratCommand' [package "SeuratObject"] with 5 slots
-    ##   .. ..$ RunUMAP.SCT.pca                  :Formal class 'SeuratCommand' [package "SeuratObject"] with 5 slots
-    ##   .. ..$ FindSpatiallyVariableFeatures.SCT:Formal class 'SeuratCommand' [package "SeuratObject"] with 5 slots
+    ##   ..@ commands    : list()
     ##   ..@ tools       : list()
 
 ### Visualize basic features of the data
