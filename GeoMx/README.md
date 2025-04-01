@@ -24,6 +24,7 @@ have these fields.**
 Box-folder with the raw dataset (DCCs, PKC and annotation): [Kidney dataset](https://uchicago.box.com/s/4lpumf7ekhw8711192frmzt9ndf0cofb)
 
 Counts, features, and metadata tables post-QC are in the **results** folder.
+
 NanoStringGeoMxSet and SpatialExperiment  objects are in the **env** folder.
 
 ## Steps
@@ -35,7 +36,8 @@ For each script, there is an md and Rmd file.
 
 ### 2. Normalization and DE analysis
 [2_geomx_norm_DE](codes/2_geomx_norm_DE.md)
-[2B_geomx_standR_norm_DE](codes/2_geomx_standR_norm_DE.md)
+
+[2B_geomx_standR_norm_DE](codes/2B_geomx_standR_norm_DE.md)
 
 ### Spatial Deconvolution
 [geomx_SpatialDecon](codes/geomx_SpatialDecon.md)
