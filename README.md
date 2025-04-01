@@ -9,11 +9,11 @@ These materials are provided as part of the workshop *Introduction to Spatial Tr
 |Overview|[slides](link-to-powerpoint)|Slides|
 |Visium Example 1|[Seurat vignette](link-to-md)|Markdown |
 |Visium Example 2|[Tumor microenvironment](link-to-md)|Markdown |
-|GeoMX QC|[1_geomx_setup.qc](GeoMx/codes/1_geomx_setup_sq_md)|Markdown and Rmd |
-|GeoMX DE Geomxtools|[Title](link)|Markdown and Rmd |
-|GeoMX DE standR,limma|[Title](link)|Markdown and Rmd |
-|GeoMX - Spatial Deconvolution|[Title](link)|Markdown and Rmd |
-|GeoMX - Seurat conversion|[Title](link)|Markdown and Rmd |
+|GeoMX QC|[1_geomx_setup_qc](GeoMx/codes/1_geomx_setup_sq.md)|Markdown and Rmd |
+|GeoMX DE Geomxtools|[2_geomx_norm_DE](GeoMx/codes/2_geomx_norm_DE.md)|Markdown and Rmd |
+|GeoMX DE standR,limma|[2B_geomx_standR_norm_DE](GeoMx/codes/2B_geomx_standR_norm_DE.md)|Markdown and Rmd |
+|GeoMX - Spatial Deconvolution|[geomx_SpatialDecon](GeoMx/codes/geomx_SpatialDecon.md)|Markdown and Rmd |
+|GeoMX - Seurat conversion|[geomx_Seurat](GeoMx/codes/geomx_Seurat.md)|Markdown and Rmd |
 
 
 ## R packages
