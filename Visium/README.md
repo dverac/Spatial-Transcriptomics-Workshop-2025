@@ -37,7 +37,7 @@ annotation of the original data, and is also available in the same Box folder.
 #### 4. Deconvolution
 #### 5. Spatial correlations between cell types
 
-### R Packages required for Example 1
+### R Packages required for Example 2
   - `Seurat`
   - `Giotto`
   - `dplyr`
