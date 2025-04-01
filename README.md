@@ -1,14 +1,28 @@
 # Introduction to Spatial Transcriptomics
+
+**Authors**: Jason Shapiro, Ph.D. and Diana Vera Cruz, Ph.D.
+
+These materials are provided as part of the workshop *Introduction to Spatial Transcriptomics* held in April 3rd, 2025 at the University of Chicago. 
+
 |Topic |Materials |Type |
 |------|-----|------|
 |Overview|[slides](link-to-powerpoint)|Slides|
 |Visium Example 1|[Seurat vignette](link-to-md)|Markdown |
 |Visium Example 2|[Tumor microenvironment](link-to-md)|Markdown |
-|GeoMX Example 1|[Title](link)|Markdown |
-|GeoMX Example 2|[Title](link)|Markdown |
-|GeoMX Example 3|[Title](link)|Markdown |
-|GeoMX Example 4|[Title](link)|Markdown |
-|GeoMX Example 5|[Title](link)|Markdown |
+|GeoMX QC|[Title](link)|Markdown and Rmd |
+|GeoMX DE Geomxtools|[Title](link)|Markdown and Rmd |
+|GeoMX DE standR,limma|[Title](link)|Markdown and Rmd |
+|GeoMX - Spatial Deconvolution|[Title](link)|Markdown and Rmd |
+|GeoMX - Seurat conversion|[Title](link)|Markdown and Rmd |
 
 
-These materials are provided as part of the workshop *Introduction to Spatial Transcriptomics* held in April, 2025 at the University of Chicago. 
+## R packages
+
+### GeoMx key packages
+  * `GeomxTools`
+  * `SpatialExperiment`
+  * `limma`
+  * `standR`
+  * `SpatialDecon`
+
+
