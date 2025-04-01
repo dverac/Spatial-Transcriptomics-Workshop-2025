@@ -6,8 +6,8 @@
 |Topic |Materials |Type |
 |------|-----|------|
 |Overview|[slides](link-to-powerpoint)|Slides|
-|Visium Example 1|[Seurat vignette](link-to-md)|Markdown |
-|Visium Example 2|[Tumor microenvironment](link-to-md)|Markdown |
+|Visium Example 1|[Seurat vignette](link-to-md)|Markdown and Rmd |
+|Visium Example 2|[Tumor microenvironment](link-to-md)|Markdown and Rmd |
 |GeoMX QC|[1_geomx_setup_qc](GeoMx/codes/1_geomx_setup_qc.md)|Markdown and Rmd |
 |GeoMX DE Geomxtools|[2_geomx_norm_DE](GeoMx/codes/2_geomx_norm_DE.md)|Markdown and Rmd |
 |GeoMX DE standR,limma|[2B_geomx_standR_norm_DE](GeoMx/codes/2B_geomx_standR_norm_DE.md)|Markdown and Rmd |
