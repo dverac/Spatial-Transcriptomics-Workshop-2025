@@ -3,35 +3,45 @@
 
 ## Dataset
 
-The dataset is the same used for the GeomxTools tutorial, and is used 
-trhoughout all the scripts for this workshop.
+The dataset is the same used for the GeomxTools tutorial and is used 
+throughout all the scripts for this workshop.
 FFPE and FF tissue sections from 4 diabetic kidney disease (DKD) and 3
 healthy kidney sections [Merritt et al.,
 2020](https://pubmed.ncbi.nlm.nih.gov/32393914/), processed using the
-GeoMx Digital Spatial Profiler (DSP) platform. The ROI were profiled to
+GeoMx Digital Spatial Profiler (DSP) platform. The ROIs were selected to
 focus on tubules or glomeruli regions.
 
-- Glomeruli: Each ROIs defined as glomeruli contains a single
+- Glomeruli: Each ROI defined as glomeruli contains a single
   glomerulus.
 
-- Tubular: Each ROI contains multiple tubules, and are further
+- Tubular: Each ROI contains multiple tubules and are further
   classified into distal (PanCK+) or proximal (PanCK-) AOIs.
 
-**For the purposes of the tutorial, we simulated 3 columns: Number of
-nuclei, and X and Y coordinate per ROI, since the initial data did not
-have this fields.**
+**For this workshop, we simulated 3 columns: The number of
+nuclei and X and Y coordinates per ROI, since the initial data did not
+have these fields.**
 
-Box folder with dataset: [Kidney dataset](https://uchicago.box.com/s/4lpumf7ekhw8711192frmzt9ndf0cofb)
+Box-folder with the raw dataset (DCCs, PKC and annotation): [Kidney dataset](https://uchicago.box.com/s/4lpumf7ekhw8711192frmzt9ndf0cofb)
+
+Counts, features, and metadata tables post-QC are in the **results** folder.
+NanoStringGeoMxSet and SpatialExperiment  objects are in the **env** folder.
 
 ## Steps
 
+For each script, there is an md and Rmd file.
+
 ### 1. QC
+[1_geomx_setup_qc](codes/1_geomx_setup_qc.md)
 
 ### 2. Normalization and DE analysis
+[2_geomx_norm_DE](codes/2_geomx_norm_DE.md)
+[2B_geomx_standR_norm_DE](codes/2_geomx_standR_norm_DE.md)
 
 ### Spatial Deconvolution
+[geomx_SpatialDecon](codes/geomx_SpatialDecon.md)
 
-### Coersion to Seurat
+### Conversion to Seurat
+[geomx_Seurat](codes/geomx_Seurat.md)
 
 
 ## R packages
@@ -66,6 +76,6 @@ Box folder with dataset: [Kidney dataset](https://uchicago.box.com/s/4lpumf7ekhw
   Contains a list of the organs and tissues that have been studied. The datasets can be downloaded from this site.
   
   * [Nanostring Spatial tissue book](https://nanostring.com/products/geomx-digital-spatial-profiler/spatial-organ-atlas/)
-  Contains the description of various studies, study summary and purpose, including an overview of the slides, the number of genes and overview of separation between segments. 
+    Contains the description of various studies, a study summary, and the purpose, including an overview of the slides, the number of genes, and the separation between segments. 
 
 
