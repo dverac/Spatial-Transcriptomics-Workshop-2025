@@ -243,10 +243,10 @@ Seurat’s workflow for integration provides a powerful way to transfer
 information from a scRNA dataset onto the spots in a spatial dataset.
 This serves several functions:
 
--1. It can help identify the key cell types associated with clusters or
+ -1. It can help identify the key cell types associated with clusters or
 regions in the spatial data
 
--2. It can serve as a proxy for deconvolution (more in next section)
+ -2. It can serve as a proxy for deconvolution (more in next section)
 when many cell types are present
 
 **Note: it is important that your scRNA reference is a good match for
