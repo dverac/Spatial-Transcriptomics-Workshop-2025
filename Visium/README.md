@@ -10,11 +10,11 @@ from a [Box folder](https://uchicago.box.com/s/zlslf6av9flfnx8b9gjw976qw9cpttu1)
 from [Tasic et al (2016)](https://www.nature.com/articles/nn.4216).
 
 ### Topics covered in Example 1
- - 1. Loading Data
- - 2. Visualizing Features
- - 3. Normalization
- - 4. Dimensionality Reduction
- - 5. Integration with scRNA reference data
+#### 1. Loading Data
+#### 2. Visualizing Features
+#### 3. Normalization
+#### 4. Dimensionality Reduction
+#### 5. Integration with scRNA reference data
 
 ### R Packages required for Example 1
   - `Seurat`
@@ -31,11 +31,11 @@ As part of this analysis, we also created a scRNA reference dataset using data f
 annotation of the original data, and is also available in the same Box folder.
 
 ### Topics covered in Example 2
- - 1. Merging Data
- - 2. Distance Analysis with Giotto
- - 3. Spatial correlations between features
- - 4. Deconvolution
- - 5. Spatial correlations between cell types
+#### 1. Merging Data
+#### 2. Distance Analysis with Giotto
+#### 3. Spatial correlations between features
+#### 4. Deconvolution
+#### 5. Spatial correlations between cell types
 
 ### R Packages required for Example 1
   - `Seurat`
