@@ -2,7 +2,6 @@
 
 **Authors**: Jason Shapiro, Ph.D. and Diana Vera Cruz, Ph.D.
 
-These materials are provided as part of the workshop *Introduction to Spatial Transcriptomics* held in April 3rd, 2025 at the University of Chicago. 
 
 |Topic |Materials |Type |
 |------|-----|------|
@@ -15,14 +14,5 @@ These materials are provided as part of the workshop *Introduction to Spatial Tr
 |GeoMX - Spatial Deconvolution|[geomx_SpatialDecon](GeoMx/codes/geomx_SpatialDecon.md)|Markdown and Rmd |
 |GeoMX - Seurat conversion|[geomx_Seurat](GeoMx/codes/geomx_Seurat.md)|Markdown and Rmd |
 
-
-## R packages
-
-### GeoMx key packages
-  * `GeomxTools`
-  * `SpatialExperiment`
-  * `limma`
-  * `standR`
-  * `SpatialDecon`
-
+These materials are provided as part of the workshop *Introduction to Spatial Transcriptomics* held in April 3rd, 2025 at the University of Chicago. 
 
