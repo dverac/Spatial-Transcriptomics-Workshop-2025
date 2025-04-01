@@ -327,7 +327,7 @@ locations. This could indicate a problem with the scRNA reference that
 requires further attention.
 
 ``` r
-SpatialFeaturePlot(data.merge, features=c('CD3E', 'CD4', 'CD8A', 'GZMK'), images='B11', ncol = 2)
+SpatialFeaturePlot(data.merge, features=c('CD3E', 'CD4', 'CD8A', 'GZMK'), images='B11', ncol = 2, pt.size.factor=45)
 ```
 
 <img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-17-1.png" width="100%" />
