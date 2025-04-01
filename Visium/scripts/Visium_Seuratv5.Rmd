@@ -1,0 +1,223 @@
+---
+title: "CRI - Spatial Transcriptomics"
+subtitle: "Visium: Seurat Walkthrough"
+author: "Jason Shapiro"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+# {.tabset}
+## Tutorial
+### Introduction
+This tutorial accompanies materials from the CRI Spatial Transcriptomics Workshop (April 2025). In this section, we walk through a modified version of Seurat's excellent vignette for [spatial data analysis](https://satijalab.org/seurat/articles/spatial_vignette). We have already downloaded the necessary Space Ranger outputs and provided them via this tutorial's GitHub page, but the same data can also be obtained with the SeuratData package or directly from 10X.
+
+### Obtaining other example data
+If readers are interested in exploring other example data from 10X, please visit their [data repository](https://www.10xgenomics.com/datasets). After clicking on a dataset link, navigate to "Output and supplemental files". From there, you will need to download the "Spatial imaging data" and "Feature / barcode matrix HDF5 (filtered)" files to the same folder. The imaging data will need to be decompressed, and the h5 file will need to be renamed as "filtered_feature_bc_matrix.h5". After doing so, you will have the minimum requirements necessary to load the data into Seurat.
+
+
+```{r setup, include=FALSE}
+.libPaths('/Library/Frameworks/R.framework/Resources/library_alternate')  #Note: this is only included due to a special case where I have two alternate versions of Seurat installed on the same system
+library(Seurat, lib.loc = '/Library/Frameworks/R.framework/Resources/library_alternate/')
+library(dplyr)
+library(RColorBrewer)
+library(ggplot2)
+library(patchwork)
+
+
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+***
+
+### Load the data and explore the structure of the Seurat object
+After loading data of a new type for the first time, it's always helpful to use the glimpse() function from the dplyr package to get a sense of your data structure.
+
+```{r step 1 - Data Handling, echo=TRUE, eval=FALSE}
+
+brain = Load10X_Spatial('/Users/jason/Documents/Biocore/Spatial Transcriptomics Workshop 2025/Data/Seurat Example/Anterior')
+glimpse(brain)
+
+```
+
+```{r, echo=FALSE}
+#chunk above included as correct starting point, but will use a pre-saved version to speed up knitting steps that take a long time to execute
+brain = readRDS('/Users/jason/Documents/Biocore/Spatial Transcriptomics Workshop 2025/Data/Seurat Example/brain.rds')
+glimpse(brain)
+
+```
+### Visualize basic features of the data
+Next, we'll visualize the distribution of counts and features in the data. Note that the default assay for a spatial dataset is "Spatial" (in contrast to a scRNA dataset where it is called "RNA").
+```{r, echo=FALSE}
+Idents(brain) = 'orig.ident'
+```
+
+```{r, echo=TRUE, out.width="100%"}
+
+p1 = VlnPlot(brain, features = 'nCount_Spatial', pt.size = 0.1) + NoLegend()
+p2 = SpatialFeaturePlot(brain, features = 'nCount_Spatial', pt.size.factor=1200)+theme(legend.position = 'right')
+wrap_plots(p1,p2)
+
+```
+
+
+Most spots in this dataset have relatively high sequencing depth, but some areas have lower expression. Note that these regions of lower expression appear to follow the shape of the tissue and likely reflect variation in cell counts or relevant differences in the biology. **Be on the lookout for blocks of unusually low or high expression in a tissue that do not follow the image underneath. For instance, if you see a rectangular band of higher expression going down or across the center of the image, this could indicate a problem during sample preparation**.
+
+Next, let's visualize the number of features per spot, as well as the variation in nFeatures/nCounts. The latter is a simple proxy for complexity and can tell us a bit more about the spots with lower counts.
+```{r, echo=TRUE, out.width="100%"}
+
+p3 =  SpatialFeaturePlot(brain, features = 'nFeature_Spatial', pt.size.factor=1200)
+brain$Genes_per_read = brain$nFeature_Spatial/brain$nCount_Spatial
+p4 = SpatialFeaturePlot(brain, features = 'Genes_per_read', pt.size.factor=1200)
+wrap_plots(p3, p4)
+```
+
+
+We can see that the tissue is feature-rich throughout. We also note that low-count spots are not necessarily low-complexity. 
+
+#### A side question: Should we filter?
+When should we filter spots out of a Visium dataset, and what parameters should we use? With Visium data, we tend to be more forgiving of spots with relatively low counts. Partly, this is because spots vary in how many cells they include and, combined with variation in sequencing depth, it is not uncommon to find spots with only a few hundred reads. In general, I recommend checking the distribution of counts and features, but primarily to identify sample-level problems. You typically won't need to filter individual spots out of a Visium dataset.
+
+### Visualize specific genes
+These functions work just as with scRNA data, except we visualize expression directly on the tissue. Before running any normalizations, let's check the raw data.
+
+```{r, echo=FALSE}
+DefaultAssay(brain) = "Spatial"
+```
+
+```{r, echo=TRUE, out.width="100%"}
+SpatialFeaturePlot(brain, features = c("Hpca", "Ttr"), pt.size.factor=1200)
+```
+
+In the Seurat vignette, they recommend normalizing data prior to this visualization, but there is a potential pitfall: with spatial data, we often care about variation in the number of cells in a spot, not just the change in expression per cell. We will generally still use normalization, and it is necessary for downstream analyses, but it is also worthwhile to check the raw counts. This is especially true for genes with low expression.
+
+### Normalize the data and re-visualize
+We will use SCTransform to follow along with the Seurat tutorial, but the basic log transformation with NormalizeData is often more intuitive.
+
+```{r, echo=TRUE, eval=FALSE}
+brain = SCTransform(brain, assay = 'Spatial', verbose = FALSE)  #Note that we have to specify the assay, since Seurat expects "RNA" by default.
+```
+```{r, echo=FALSE}
+DefaultAssay(brain) = "SCT"
+```
+```{r, echo=TRUE, out.width="100%"}
+SpatialFeaturePlot(brain, features = c("Hpca", "Ttr"), pt.size.factor=1200)  #Note that Seurat automatically changes the assay to SCT after SCTransform
+```
+
+#### Customize visualizations
+Often, you will want to modify some of the parameters in SpatialFeaturePlot. For instance, if you have a smaller tissue, you may need to reduce pt.size.factor to fill the space more evenly. In contrast, larger tissues might require increasing the pt.size.factor for a better figure. The alpha parameter can also be helpful to bring higher expression spots to the foreground. Last, you can customize your visualizations with familiar ggplot functions and tricks.
+
+
+```{r, echo=TRUE, out.width="100%"}
+
+p5 = SpatialFeaturePlot(brain, features = "Hpca", pt.size.factor = 800)
+p6 = SpatialFeaturePlot(brain, features = "Hpca", alpha = c(0.1, 1), pt.size.factor=1200)
+p7 = SpatialFeaturePlot(brain, features = 'Hpca', pt.size.factor=1200)+
+  scale_fill_continuous(type = 'viridis')
+p5 + p6 + p7
+```
+
+***
+
+### Dimensionality Reduction
+We can handle the data just as we would treat a scRNA object, using all of the typical Seurat functions to build a PCA and UMAP visualization. With SpatialDimPlot we can then visualize clusters within the tissue. **Note: clusters in spatial data reflect not just cell type but combinations of multiple cell types and spatial context. Annotating clusters in spatial data is often more challenging than annotating scRNA data.**
+
+```{r, echo=TRUE, out.width="100%"}
+
+brain = RunPCA(brain, assay = "SCT", verbose = FALSE)
+brain = FindNeighbors(brain, reduction = "pca", dims = 1:30)
+brain = FindClusters(brain, verbose = FALSE)
+brain = RunUMAP(brain, reduction = "pca", dims = 1:30)
+p8 = DimPlot(brain, reduction = 'umap', label = TRUE)
+p9 = SpatialDimPlot(brain, label = TRUE, label.size=3, pt.size.factor=1200)
+p8 + p9
+```
+
+As noted in the Seurat vignette, showing many overlapping colors can be difficult to read (and this will be even more difficult in a tissue with more overlapping cell types). One option is the "cells.highlight" argument in SpatialDimPlot:
+
+```{r, echo=TRUE, out.width="100%"}
+SpatialDimPlot(brain, cells.highlight = CellsByIdentities(object = brain, idents = c(2, 1, 4, 3,
+    5, 8)), facet.highlight = TRUE, ncol = 3, pt.size.factor=1200)
+```
+
+#### Additional customization options
+As noted earlier, we can also usee ggplot functions, such as scale_fill_manual, to modify the colors. We'll pick custom colors for 6 clusters used in the previous plot, and we'll set the rest of the clusters to NA
+
+```{r, echo=TRUE, out.width="100%"}
+brewcols = rep(NA, 15)
+brewcols[c(2, 1, 4, 3, 5, 8)] = brewer.pal(6, 'Set1')  #Pull 6 colors from Set1 fro RColorBrewer  
+SpatialDimPlot(brain, label=TRUE, label.size=3, pt.size.factor=1200)+
+  scale_fill_manual(values = brewcols)
+```
+
+### Identify Markers
+The function FindMarkers() works just as it would with scRNA data, and is one way that we can identify differences between regions in the tissue. In the Seurat vignette, they use this to compare clusters. Another option they introduce is FindSpatiallyVariableFeatures(). This function looks for features whose expression correlates with their location. We copy their example below but also note (as they do) that many packages tackle this concept in different ways. (Note: this function can be quite slow)
+
+```{r, echo=TRUE, eval=FALSE}
+brain = FindSpatiallyVariableFeatures(brain, assay = "SCT", features = VariableFeatures(brain)[1:1000],
+    selection.method = "moransi", verbose = FALSE)
+top.features = head(SpatiallyVariableFeatures(brain, selection.method = "moransi"), 6)
+SpatialFeaturePlot(brain, features = top.features, ncol = 3, alpha = c(0.1, 1), pt.size.factor=1200)
+```
+```{r, echo=FALSE,out.width="100%"}
+top.features = head(SpatiallyVariableFeatures(brain, selection.method = "moransi"), 6)
+SpatialFeaturePlot(brain, features = top.features, ncol = 3, alpha = c(0.1, 1), pt.size.factor=1200)
+```
+
+***
+
+### Integration with a single-cell reference
+Seurat's workflow for integration provides a powerful way to transfer information from a scRNA dataset onto the spots in a spatial dataset. This serves several functions:
+
+-1. It can help identify the key cell types associated with clusters or regions in the spatial data
+
+-2. It can serve as a proxy for deconvolution (more in next section) when many cell types are present
+
+**Note: it is important that your scRNA reference is a good match for your spatial data. scRNA data is often obtained after cell sorting to remove unwanted material, but these excluded cells may still be present in spatial data.**
+
+We will start by subsetting the dataset to just the cortex region, as done in the Seurat vignette.
+
+```{r, echo=TRUE}
+# Add coordinates as features to the metadata (necessary because of how the data were loaded in our example. Not necessary with LoadData)
+brain$imagerow = brain@images$slice1@coordinates$row
+brain$imagecol = brain@images$slice1@coordinates$col
+cortex = subset(brain, idents = c(1, 2, 3, 4, 6, 7))
+cortex = subset(cortex, imagerow < 30 | imagecol < 90)  #These values are modified from the Seurat vignette due to the issue above
+cortex = subset(cortex, imagerow < 55 & imagecol > 20)
+cortex = SCTransform(cortex, assay = "Spatial", verbose = FALSE)
+cortex = RunPCA(cortex, verbose=FALSE)
+```
+Next, we load the reference data and prepare it for integration (we skip some steps for visualization from the original vignette)    
+```{r, echo=TRUE}
+allen_reference = readRDS("/Users/jason/Documents/Biocore/Spatial Transcriptomics Workshop 2025/Data/Seurat Example/allen_cortex.rds")
+allen_reference = SCTransform(allen_reference, verbose = FALSE)
+allen_reference = RunPCA(allen_reference, verbose = FALSE)
+```
+Finally, we identify the transfer anchors and apply them to the spatial data
+```{r, echo=TRUE}
+anchors = FindTransferAnchors(reference = allen_reference, query = cortex, normalization.method = "SCT")
+predictions.assay = TransferData(anchorset = anchors, refdata = allen_reference$subclass, prediction.assay = TRUE,
+    weight.reduction = cortex[["pca"]], dims = 1:30)
+cortex[["predictions"]] = predictions.assay
+```
+```{r, echo=TRUE, out.width="100%"}
+DefaultAssay(cortex) = "predictions"
+SpatialFeaturePlot(cortex, features = c("L2/3 IT", "L4"), pt.size.factor = 1200, ncol = 2, crop = TRUE)
+```
+
+
+### Conclusion
+This concludes the initial introduction to spatial data with Seurat. We encourage visiting the [Seurat Vignette](https://satijalab.org/seurat/articles/spatial_vignette) for additional details.
+
+## Session info
+
+The output from running 'sessionInfo' is shown below and details all packages and version necessary to reproduce the results in this report.
+
+```{r session info}
+sessionInfo()
+```
+
+
+
