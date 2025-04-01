@@ -3,7 +3,7 @@
 
 ## Datasets
 
-### Example 1: Mouse Brain
+### [Example 1: Mouse Brain](https://github.com/CRI-Biocore/Spatial-Transcriptomics-Workshop-2025/blob/main/Visium/scripts/Visium_Seuratv5.md)
 This dataset uses the anterior brain sample also used in the [Seurat vignette](https://satijalab.org/seurat/articles/spatial_vignette) for spatial data.
 The data are available with SeuratData, from [10X](https://www.10xgenomics.com/datasets/mouse-brain-serial-section-1-sagittal-anterior-1-standard-1-1-0), or
 from a [Box folder](https://uchicago.box.com/s/zlslf6av9flfnx8b9gjw976qw9cpttu1) provided for this workshop. We also use the same scRNA reference data
@@ -24,7 +24,7 @@ from [Tasic et al (2016)](https://www.nature.com/articles/nn.4216).
   - `patchwork`
 
 
-### Example 2: Tumor Microenvironment
+### [Example 2: Tumor Microenvironment](https://github.com/CRI-Biocore/Spatial-Transcriptomics-Workshop-2025/blob/main/Visium/scripts/TME_Seuratv5.md)
 This dataset includes two samples taken from [Batf3+ DCs and the 4-1BB/4-1BBL axis are required at the effector phase in the tumor microenvironment for PD-1/PD-L1 blockade efficacy](https://www.cell.com/cell-reports/fulltext/S2211-1247(24)00469-8) by Ziblat et al (2024).
 The original data are available from GEO ([GSE238145](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE238145)), and the two samples used here are provided through an accompanying [Box folder](https://uchicago.box.com/s/pbsklrnue31wvq10qohlh7x9hev1nfaq).
 As part of this analysis, we also created a scRNA reference dataset using data from [Zheng et al (2024)](https://pubmed.ncbi.nlm.nih.gov/38428409/). Our reference is generated from a downsample of a new integration and
@@ -44,4 +44,7 @@ annotation of the original data, and is also available in the same Box folder.
   - `RColorBrewer`
   - `ggplot2`
   - `patchwork`
-  - `corrplot`	 
+  - `corrplot`
+
+#### Other R code
+The second example also uses functions provided in [utility_functions.R](https://github.com/CRI-Biocore/Spatial-Transcriptomics-Workshop-2025/blob/main/Visium/scripts/utility_functions.R)
