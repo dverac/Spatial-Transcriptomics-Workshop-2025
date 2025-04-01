@@ -1,0 +1,120 @@
+---
+title: "Conversion of GeoMx data to Seurat object"
+author: "Diana Vera Cruz"
+date: "2025-03-18"
+output: html_notebook
+---
+
+
+## Introduction
+
+A NanoStringsSet object can be converted to a Seurat object for further analysis or visualization. 
+This is based in: 
+(https://bioconductor.org/packages/release/bioc/vignettes/GeomxTools/inst/doc/GeomxSet_coercions.html)
+but using a different dataset. 
+
+## Requirements
+
+This script uses the output GeoMx object from the QC script.
+
+
+```{r}
+## Libraries
+library(GeomxTools)
+library(Seurat)
+library(harmony) # devtools::install_github("immunogenomics/harmony")
+
+
+## Read tidy object: QC and filtered, but missing normalization. 
+geomx <- readRDS('../env/tidy_geomx_obj.RDS')
+## Normalization: Q3
+geomx <- normalize(geomx, norm_method="quant", desiredQuantile = .75, toElt = "q_norm")
+
+
+sc <- as.Seurat(geomx, normData = 'q_norm')
+## If the data has Coordinates, include it here. 
+sc <- as.Seurat(geomx, normData = 'q_norm', coordinates = c("ROI_Coordinate_X", "ROI_Coordinate_Y"))
+
+## Assign an initial indentity to the cells.
+Idents(sc) = 'region' ## Either the name of the column in metadata or the vector with values pers segment/ROI.
+```
+
+
+## Feature plots
+
+### VlnPlots
+
+You can use the VlnPlots, with any of the features per segment, either from metadata or genes.
+```{r}
+VlnPlot(sc, features = 'nCount_GeoMx', pt.size = 0.1, group.by = 'region') 
+
+VlnPlot(sc, features = 'area', pt.size = 0.1) 
+
+VlnPlot(sc, features = 'nCount_GeoMx', pt.size = 0.1, group.by = 'class') 
+
+VlnPlot(sc, features = 'LYZ', group.by = 'region')
+```
+
+## Dimension reduction and variance.
+
+### PCA
+```{r pca}
+sc <- FindVariableFeatures(sc)
+sc <- ScaleData(sc)
+sc <- RunPCA(sc, assay = "GeoMx", verbose = FALSE)
+```
+
+```{r}
+## Variance explained by each PC. Keep 90% of variance in first 50 PC.
+x = (sc@reductions$pca@stdev)^2 / sum((sc@reductions$pca@stdev)^2) 
+which( cumsum(x) > 0.9)[1] ## PC that first includes more than 90% of variance.
+## Screeplot -> SD per PC and biplots. 
+ElbowPlot(sc, ndims = 50) + geom_vline(xintercept = which( cumsum(x) > 0.9)[1], linetype = 'dashed', color = 'orange')
+PCAPlot(sc, group.by = 'region', shape.by = 'class')
+PCAPlot(sc, dims =c(3,4), group.by = 'region', shape.by = 'class')
+```
+
+
+```{r}
+pcs = seq_len(28)
+sc <- FindNeighbors(sc, reduction = "pca", dims = pcs)
+sc <- FindClusters(sc, verbose = FALSE)
+sc <- RunUMAP(sc, reduction = "pca", dims = pcs)
+
+DimPlot(sc, reduction = "umap", label = TRUE, group.by = "region", shape.by = 'class')
+DimPlot(sc, reduction = "umap", label = TRUE, group.by = "slide_name")
+```
+
+## Spatial Feature Plots
+
+In this case, we will showcase the spatial feature plots for the one slide, disease3.
+```{r}
+
+SpatialFeaturePlot(sc[,sc$slide_name == "disease3"], features = "nCount_GeoMx", pt.size.factor = 8)
+
+SpatialFeaturePlot(sc[,sc$slide_name == "disease3"], features = "NegProbe_pct", pt.size.factor = 8)
+
+SpatialFeaturePlot(sc[,sc$slide_name == "disease3"], features = "LYZ", pt.size.factor = 8)
+```
+Nanostrings also developed a tool for this: 
+https://github.com/Nanostring-Biostats/SpatialOmicsOverlay
+
+## Batch correction
+
+You can use other tools like `harmony` to correct data and visualize the results.
+
+```{r}
+## Run harmony.
+sc <- RunHarmony(sc, group.by.vars = "slide_name", assay.use = "GeoMx", plot_convergence = TRUE)
+
+## Run clustering and UMAP.
+sc <- FindNeighbors(sc, reduction = "harmony", dims = 1:20)
+sc <- FindClusters(sc, resolution = 0.5)
+sc <- RunUMAP(sc, reduction = "harmony", dims = 1:20)
+
+DimPlot(sc, reduction = "umap", group.by = "slide_name")
+DimPlot(sc, reduction = "umap", group.by = "region", shape.by = 'class')
+```
+
+
+

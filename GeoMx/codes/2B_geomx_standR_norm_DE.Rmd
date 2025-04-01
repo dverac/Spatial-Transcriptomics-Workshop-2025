@@ -1,0 +1,492 @@
+---
+title: "DE analysis using StandR: Normalization, Batch correction and DE analysis"
+subtitle: "Kidney example dataset"
+author: "Diana Vera Cruz"
+date: "`r Sys.Date()`"
+output:
+  html_notebook:
+    toc: yes
+    toc_float: yes
+---
+
+## StandR
+
+This library was developed to facilitate GeoMx data analysis using the more general `SpatialExperiment` object.
+
+This script is inspired by the tutorial:
+
+<https://davislaboratory.github.io/GeoMXAnalysisWorkflow/articles/GeoMXAnalysisWorkflow.html>
+
+We follow here the steps post-QC, including normalization, batch correction and DE analysis. 
+
+## Input Data
+
+`StandR` uses the alternative raw data consisting on raw counts, metadata and feature annotation files. Typically in tabular format. If not, you can load each of the datasets and ensure the correspondence in the column names. The counts and features are done at the Gene level instead of Probes, with all the probes associated to a given Gene aggregated prior.
+
+-   **Counts**: Dataframe, or table, including a column with the gene name (Default, `TargetName`).
+
+-   **Sample Annotation**: Sample annotation, it should include a segment name column, (Default, `SegmentDisplayName`) and Coordinate columns (Default, `ROICoordinateX` and `ROICoordinateY`).
+
+-   **Features**: Optional, but if provided, it should include a column with the gene name (Default, `TargetName`).
+
+In this case, we are using the output from the previous QC step with `GeoMxTools`. All the mentioned tables were stored in proper format. 
+
+## SpatialExperiment object
+
+StandR is based in the `SpatialExperiment` object, which is a subclass of `SingleCellExperiment` object. The `SpatialExperiment` object is a container for spatially resolved transcriptomics data, which includes the raw counts, sample annotation and feature annotation.
+
+Key object slots: 
+
+  * assays: Matrix-like objects with expression data (counts, log-counts).
+  * colData: DataFrame with sample annotation.
+  * rowData: DataFrame with feature annotation.
+  * metadata: List with additional, general information of the study (sample-level info).
+  * imgData: Image and histology data. 
+  * spatialCoords: Spatial coordinates. 
+  * reducedDims: Dimensionality reduction results, PCA, UMAP.
+
+
+```{r setup, include = F}
+## Libraries
+library(tidyverse)
+library(standR)
+library(SpatialExperiment)
+library(SingleCellExperiment)
+library(limma)
+library(edgeR)
+library(ggalluvial)
+library(ggrepel)
+```
+
+```{r create_spe_obj}
+## Set output directory.
+out_dir = '../results'
+## Create the SpatialExperiment Object.
+spe = readGeoMx(countFile='../results/tidy_counts.tsv', 
+          sampleAnnoFile='../results/tidy_metadata.tsv', 
+          featureAnnoFile = '../results/tidy_features.tsv',
+          colnames.as.rownames = c('TargetName', 'segment_name', 'TargetName'), 
+          coord.colnames = c('ROI_Coordinate_X','ROI_Coordinate_Y')
+)
+
+```
+
+## Dataset exploration
+
+### Dataset categories
+
+```{r}
+plotSampleInfo(spe, column2plot = c("slide_name", "class","region", 'segment'))
+```
+
+### Relative log expression distribution
+
+GeoMx data tends to have high variation and batch effects, normally associated to slides or individuals. We can check those variables to see if they are affecting the data.
+
+We can also check other variables that
+
+```{r}
+plotRLExpr(spe, ordannots = "slide_name", assay = 2, color = `slide_name`) + labs(x = NULL, title = 'No norm')
+
+plotRLExpr(spe, ordannots = "slide_name", assay = 2, color = region) + labs(x = NULL, title = 'No norm')
+```
+
+## Normalization
+
+We will use the `geomxNorm` function to normalize the data. We will use the `TMM` and `upperquartile` methods. Upperquartile normalization is similar to the one suggested in GeoMxTools.
+
+```{r normalization}
+## Add initial normalization. 
+spe_tmm <- geomxNorm(spe, method = "TMM")
+spe_q3 <- geomxNorm(spe, method = "upperquartile")
+```
+
+```{r}
+plotRLExpr(spe_tmm, ordannots = "slide_name", assay = 2, color = `slide_name`) + labs(x = NULL, title = 'TMM')
+
+plotRLExpr(spe_q3, ordannots = "slide_name", assay = 2, color = `slide_name`) + labs(x = NULL, title = 'Q3')
+```
+
+### PCA
+
+We use PCAtools to compute the preliminary PCA using Q3 normalization, in this case, we remove 5% of the genes with the lowest CV from the PCA computation.
+
+```{r}
+set.seed(100)
+plotPairPCA(spe_q3, assay = 2, color = class, shape = region, title = "Q3")
+plotPairPCA(spe_q3, assay = 2, color = slide_name, shape = region, title = "Q3")
+```
+
+## Batch correction
+
+This step is done in the context of 2 key variables: Variable to use for batch effect correction and the variable you want to maximize the separation (Variable of interest)
+
+### Initial PCA: no normalization
+
+```{r}
+plotPairPCA(spe, assay = 2, n_dimension = 3, color = class, shape = region)
+plotPairPCA(spe, assay = 2, n_dimension = 3, color = slide_name, shape = region)
+```
+
+### `RUV4` method
+
+This method requires to compute Negative Control genes per batch. top_n is the number of genes with the lowest variation of expression used for this.
+
+**How to choose the best top_n?**
+
+Check various values for top_n, if the Coefficient of variance (CV) in the genes seems high, reduce top_n, remember that low top_n also affects the performance of the method, so don't go too low.
+
+```{r}
+## Gather CV per genes: Use Raw counts 
+genes_cv <- apply(counts(spe) + 1, 1, function(x) sd(x)/mean(x) ) %>% sort(decreasing = F)
+
+## Histogram of the lowest 99% of the CVs. -> Avoid major outliers. 
+hist(genes_cv[genes_cv <= quantile(genes_cv, p = 0.99)], breaks = 50, 
+     main = 'CV per gene - 99%Quantile', xlab = 'CV')
+
+
+spe <- findNCGs(spe, batch_name = "slide_name", top_n = 1000)
+hist(genes_cv[metadata(spe)$NCGs], breaks = 50, main = 'top_n = 1000', xlab = 'CV')
+
+```
+
+```{r}
+## We are setting top_n to the top
+spe <- findNCGs(spe, batch_name = "slide_name", top_n = 500)
+hist(genes_cv[metadata(spe)$NCGs], breaks = 50, main = 'top_n = 500', xlab = 'CV')
+
+spe <- findNCGs(spe, batch_name = "slide_name", top_n = 300)
+hist(genes_cv[metadata(spe)$NCGs], breaks = 50, main = 'top_n = 300', xlab = 'CV')
+```
+
+**How to choose the best k?**
+
+The *k* parameter is the number of factors to remove. We can check the separation of the classes in the PCA plot and overall grouping of segments.
+
+We want to choose the smallest *k* that removes batch effects without disrupting the biological signal. We increase the value of *k* if batch effect dominates the first components PC1/PC2, and reduce it if biological groups are disrupted.
+
+If increasing *k* leads to lower variance explained by the first PCs, reduce *k*.
+
+Afterwards, the GeoMxBatchCorrection is run in the context of the main biological variable of interest. In this case, the class variable, we also check the batch-variable.
+
+We don't see an improvement on separation, but we do observe a reduction in explained variance, so we will work with k = 1.
+
+```{r}
+for(i in seq(5)){
+  spe_ruv4 <- geomxBatchCorrection(spe, factors = "class", 
+                   NCGs = metadata(spe)$NCGs, k = i)
+  
+  print(plotPairPCA(spe_ruv4, assay = 2, n_dimension = 3, color = slide_name, shape = class, title = paste0("k = ", i)))
+  #print(plotPairPCA(spe_ruv4, assay = 2, n_dimension = 3, color =slide_name, title = paste0("k = ", i)))
+}
+```
+
+```{r}
+spe_ruv4 <- geomxBatchCorrection(spe, factors = "class", 
+                   NCGs = metadata(spe)$NCGs, k = 1)
+
+plotPairPCA(spe_ruv4, assay = 2, n_dimension = 3, color =class, title = 'RUV4, k = 1')
+```
+
+```{r}
+plotRLExpr(spe_ruv4, assay = 2, color = slide_name) + ggtitle("RUV4")
+```
+
+### `limma` method
+
+```{r}
+spe_lrb <- geomxBatchCorrection(spe,
+                       batch = colData(spe)$slide_name, method = "Limma",
+                       design = model.matrix(~class, data = colData(spe)))
+
+plotPairPCA(spe_lrb, assay = 2, color = class, title = "Limma removeBatch")
+plotPairPCA(spe_lrb, assay = 2, color = segment, title = "Limma removeBatch")
+```
+
+```{r}
+plotRLExpr(spe_lrb, assay = 2, color = slide_name) + ggtitle("limma removeBatch")
+```
+
+## Batch correction: Evaluation
+
+To test which method might have done a better job, we can use the `plotClusterEvalStats` function. This function computes the multiple metrics for each method and plots them.
+
+We focus on two types of variables: The ones related to the biology we care, including or main variable of interest and the batch variable.
+
+In the various test, we aim to have the highest scores for the biology, and the lowest for the batch variable.
+In this case, we chose the limma method, as it seems to have the best separation of the classes.
+
+```{r}
+plotClusterEvalStats(spe_list = list(spe, spe_q3, spe_ruv4, spe_lrb),
+                     bio_feature_name = "class",
+                     batch_feature_name = "slide_name",
+                     data_names = c("Raw", "Q3norm", "RUV4","Limma"))
+```
+
+## DE analysis: `limma-voom`
+
+DE analysis performed using the `limma` package. edgeR, limma-voom and DESeq2 are recommended for GeoMx data.
+
+Strong preference for `limma-voom` using duplicate correlation, as it is the most robust method for this type of data. Does not modify the variation in the dataset and assumes a mixed effect for the batch variable.
+
+DESeq2 is recommended when you have raw counts, and you want to include batch variables as covariates but you also have a full-rank matrix (Slide is not confounded with the variable of interest).
+
+### Batch correction within DE analysis
+
+In this case, we will start from the original dataset, since we will use the duplicated correlation to account for the batch effect.
+
+**Design Model**: \~ Class + Class:Cell Type
+
+
+```{r}
+## DGEList
+dge <- SE2DGEList(spe)
+dge <- calcNormFactors(dge, method = 'upperquartile')
+metadata <- colData(spe) %>% as.data.frame()
+metadata <- mutate(metadata, 
+       CellType = case_when(segment == 'Geometric Segment' ~ 'glomeruli', segment == 'PanCK-' ~ 'DistalTubules', TRUE ~ 'ProximalTubules') %>% factor(levels = c('glomeruli', 'ProximalTubules', 'DistalTubules')), 
+       class = factor(class, levels = c('normal', 'DKD'))
+       )
+block_var = metadata$slide_name
+## Create a nice variable for cell type: 
+
+## Design model. 
+design = model.matrix(~0 + CellType + class:CellType, data = metadata)
+## Update contrasts names. 
+colnames(design) <- gsub("CellType|class", "", colnames(design)) %>% gsub(pattern = ':', rep = '_')
+```
+
+#### Biological Coefficient of Variation
+
+```{r, warning = F}
+keep <- filterByExpr(dge, design)
+dge_all <- dge[keep, ]
+dge_all <- estimateDisp(dge_all, design = design, robust = TRUE)
+
+plotBCV(dge_all, ylim = c(0, 1.3))
+bcv_df <- data.frame(
+  'BCV' = sqrt(dge_all$tagwise.dispersion),
+  'AveLogCPM' = dge_all$AveLogCPM,
+  'gene_id' = rownames(dge_all)
+)
+
+highbcv <- bcv_df$BCV > 0.8
+highbcv_df <- bcv_df[highbcv, ]
+points(highbcv_df$AveLogCPM, highbcv_df$BCV, col = "red")
+text(highbcv_df$AveLogCPM, highbcv_df$BCV, labels = highbcv_df$gene_id, pos = 4)
+```
+
+#### Fit model
+
+```{r}
+# Estimate correlation within slides
+corfit <- duplicateCorrelation(voom(dge, design), block = block_var)
+
+# Run voom with duplicate correlation
+v <- voom(dge, design, block = block_var, correlation = corfit$consensus, plot = T)
+
+# Fit the model
+fit <- lmFit(v, design, block = block_var, correlation = corfit$consensus)
+fit <- eBayes(fit)
+```
+
+We also check the value of the concensus correlation, part of the output of the `duplicateCorrelation` function.
+
+If the value is < 0.1, blocking might not as needed. 
+If the value is >0.5, you might need a second round of duplicateCorrelation, same code, but using the residuals of the first model. 
+
+In this case, `corfit$consensus.correlation` is 0.205, so the batch seems to have an observable effect. 
+
+```{r}
+# Extract results for a specific class effect within a cell type.
+colnames( fit$coefficients )
+```
+
+#### Results
+
+```{r}
+for(i in c('glomeruli', 'ProximalTubules', 'DistalTubules')){
+  ## Extract all the results per gene: No filter for p-value nor logFC, with regular adjustment.
+  de <- topTable(fit, coef=paste0(i,"_DKD"), number=Inf) 
+  
+  ## DEG
+  filter(de, adj.P.Val < 0.05 & abs(logFC) >= log2(1.5)) %>% 
+    dplyr::select(Gene = SystematicName, mean_expr, logFC, P.Value, adj.P.Val) %>% 
+    arrange(desc(abs(logFC))) %>% head(n = 20) %>% 
+    knitr::kable(caption = paste0('Top 20 DEGs\nDKD vs Normal, ', i)) %>% print
+  
+  ## Volcano plot
+  A = de %>% mutate(sig = adj.P.Val < 0.05 & abs(logFC) >= log2(1.5), gene = ifelse(sig == T, SystematicName, '')) %>% 
+    ggplot(aes(x = logFC, y = -log10(adj.P.Val), color = sig, label = gene)) + theme_bw() +
+    geom_hline(yintercept = 1.3, color = 'orange', linetype = 'dashed') + 
+    geom_vline(xintercept = c(-0.59, 0.59),  color = 'grey50', linetype = 'dashed') +
+    geom_point(size = 
+                 0.5) + geom_text_repel(size = 3, color = 'black', max.overlaps = 15) + 
+    scale_color_manual(values = c(`FALSE` = 'black', `TRUE` = 'red3')) +
+    theme(legend.position = 'none') + ggtitle(paste('DKD vs Normal', i))
+  
+  print(A)
+  ## Write output.
+  write_tsv(de, file = paste0(out_dir, '/DEG_limmaDup_', i, '.tsv'))
+}
+```
+
+#### Heatmaps
+
+For visualization, we can use one of the batch corrected datasets, in this case, we will use the limma batch corrected dataset.
+
+We will plot the logNorm expression in the Top 20 DEG in Glomeruli.
+
+```{r}
+## Heatmaps: 
+## Use the top 20 DEGs for each cell type.
+i = 'glomeruli'
+de <- topTable(fit, coef= paste0(i,"_DKD"), number=Inf)
+  
+top_20 = filter(de, adj.P.Val < 0.05 & abs(logFC) >= log2(1.5)) %>% 
+    dplyr::select(Gene = SystematicName, mean_expr, logFC, P.Value, adj.P.Val) %>% 
+    arrange(desc(abs(logFC))) %>% head(n = 20) %>% rownames
+
+norm_mx = logcounts(spe_lrb)[top_20, metadata$CellType == i]
+
+ComplexHeatmap::Heatmap(norm_mx, name = 'logNorm', 
+                        #col = circlize::colorRamp2(c(0, 10, 20), c("white", "red", "darkred")), 
+                        column_split = metadata$class[metadata$CellType == i],
+                        cluster_rows = F, cluster_columns = F, show_row_names = T, show_column_names = F)
+
+```
+
+### DE analysis in batch-corrected data
+
+In this case, we will start with one of the batch corrected datasets, since we will use the duplicated correlation to account for the batch effect.
+
+
+
+**Design Model**: $\sim Class + Class:CellType + ruvW_1 + ... + ruvW_k$
+Where $k$ is the selectec coefficient for RUV4 correction.
+
+```{r}
+## DGEList
+dge <- SE2DGEList(spe_ruv4)
+#dge <- calcNormFactors(dge, method = 'upperquartile')
+metadata <- colData(spe_ruv4) %>% as.data.frame()
+metadata <- mutate(metadata, 
+       CellType = case_when(segment == 'Geometric Segment' ~ 'glomeruli', segment == 'PanCK-' ~ 'DistalTubules', TRUE ~ 'ProximalTubules') %>% factor(levels = c('glomeruli', 'ProximalTubules', 'DistalTubules')), 
+       class = factor(class, levels = c('normal', 'DKD'))
+       )
+
+## Design model. 
+design = model.matrix(~0 + CellType + class:CellType + ruv_W1, data = metadata)
+## Update contrasts names. 
+colnames(design) <- gsub("CellType|class", "", colnames(design)) %>% 
+  gsub(pattern = ':', rep = '_')
+```
+
+```{r}
+## Contrast of interest.
+## If interested in a specific contrast, not equal to any of the levels, create it. 
+##
+contr.matrix <- makeContrasts(
+   Proximal_vs_DistalTubules = ProximalTubules - DistalTubules, 
+   levels = colnames(design))
+```
+
+
+#### Biological Coefficient of Variation
+
+```{r}
+keep <- filterByExpr(dge, design)
+dge_all <- dge[keep, ]
+dge_all <- estimateDisp(dge_all, design = design, robust = TRUE)
+
+plotBCV(dge_all, ylim = c(0, 1.3))
+bcv_df <- data.frame(
+  'BCV' = sqrt(dge_all$tagwise.dispersion),
+  'AveLogCPM' = dge_all$AveLogCPM,
+  'gene_id' = rownames(dge_all)
+)
+
+highbcv <- bcv_df$BCV > 0.8
+highbcv_df <- bcv_df[highbcv, ]
+points(highbcv_df$AveLogCPM, highbcv_df$BCV, col = "red")
+text(highbcv_df$AveLogCPM, highbcv_df$BCV, labels = highbcv_df$gene_id, pos = 4)
+```
+
+#### Fit model
+
+```{r}
+# Run voom. 
+v <- voom(dge, design, plot = T)
+
+# Fit the model
+fit <- lmFit(v)
+fit <- eBayes(fit)
+
+## fit_contrast <- contrasts.fit(fit, contrasts = contr.matrix) -> If you have a contrast of interest
+## fit_contrast <- eBayes(fit_contrast)
+```
+
+```{r}
+# Extract results for a specific class effect within a cell type.
+colnames( fit$coefficients )
+```
+
+#### Results
+
+```{r}
+for(i in c('glomeruli', 'ProximalTubules', 'DistalTubules')){
+  de <- topTable(fit, coef=paste0(i,"_DKD"), number=Inf)
+  
+  ## DEG
+  filter(de, adj.P.Val < 0.05 & abs(logFC) >= log2(1.5)) %>% 
+    dplyr::select(Gene = SystematicName, mean_expr, logFC, P.Value, adj.P.Val) %>% 
+    arrange(desc(abs(logFC))) %>% head(n = 20) %>% 
+    knitr::kable(caption = paste0('Top 20 DEGs\nDKD vs Normal, ', i)) %>% print
+  
+  ## Volcano plot
+  A = de %>% mutate(sig = adj.P.Val < 0.05 & abs(logFC) >= log2(1.5), gene = ifelse(sig == T, SystematicName, '')) %>% 
+    ggplot(aes(x = logFC, y = -log10(adj.P.Val), color = sig, label = gene)) + theme_bw() +
+    geom_hline(yintercept = 1.3, color = 'orange', linetype = 'dashed') + 
+    geom_vline(xintercept = c(-0.59, 0.59),  color = 'grey50', linetype = 'dashed') +
+    geom_point(size = 
+                 0.5) + geom_text_repel(size = 3, color = 'black', max.overlaps = 15) + 
+    scale_color_manual(values = c(`FALSE` = 'black', `TRUE` = 'red3')) +
+    theme(legend.position = 'none') + ggtitle(paste('DKD vs Normal', i))
+  
+  print(A)
+  
+  write_tsv(de, file = paste0(out_dir, '/DEG_RUV4_', i, '.tsv'))
+}
+```
+
+#### Heatmaps
+
+For visualization, we use the batch corrected datasets, in this case, we will use the RUV4 batch corrected dataset.
+
+We will plot the logNorm expression in the Top 20 DEG in Glomeruli.
+
+```{r}
+## Heatmaps: 
+## Use the top 20 DEGs for each cell type.
+i = 'glomeruli'
+de <- topTable(fit, coef= paste0(i,"_DKD"), number=Inf)
+  
+top_20 = filter(de, adj.P.Val < 0.05 & abs(logFC) >= log2(1.5)) %>% 
+    dplyr::select(Gene = SystematicName, mean_expr, logFC, P.Value, adj.P.Val) %>% 
+    arrange(desc(abs(logFC))) %>% head(n = 20) %>% rownames
+
+norm_mx = logcounts(spe_ruv4)[top_20, metadata$CellType == i]
+
+ComplexHeatmap::Heatmap(norm_mx, name = 'logNorm', 
+                        #col = circlize::colorRamp2(c(0, 10, 20), c("white", "red", "darkred")), 
+                        column_split = metadata$class[metadata$CellType == i],
+                        cluster_rows = F, cluster_columns = F, show_row_names = T, show_column_names = F)
+
+```
+
+## R Session
+
+```{r}
+## Session info
+map(sessionInfo()$otherPkgs, ~.x$Version)
+```
