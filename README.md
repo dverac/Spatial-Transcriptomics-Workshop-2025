@@ -9,7 +9,7 @@ These materials are provided as part of the workshop *Introduction to Spatial Tr
 |Overview|[slides](link-to-powerpoint)|Slides|
 |Visium Example 1|[Seurat vignette](link-to-md)|Markdown |
 |Visium Example 2|[Tumor microenvironment](link-to-md)|Markdown |
-|GeoMX QC|[Title](link)|Markdown and Rmd |
+|GeoMX QC|[1_geomx_setup.qc](GeoMx/codes/1_geomx_setup_sq_md)|Markdown and Rmd |
 |GeoMX DE Geomxtools|[Title](link)|Markdown and Rmd |
 |GeoMX DE standR,limma|[Title](link)|Markdown and Rmd |
 |GeoMX - Spatial Deconvolution|[Title](link)|Markdown and Rmd |
