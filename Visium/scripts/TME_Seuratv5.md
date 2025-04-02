@@ -23,6 +23,32 @@ cDC1+ and also to exclude CD8+ cDC1- spots that were too close to a
 cDC1+ spot. We did this by building a distance function that took
 advantage of features from Giotto.
 
+### Load libraries and functions
+
+``` r
+library(Seurat)
+library(dplyr)
+library(RColorBrewer)
+library(ggplot2)
+library(patchwork)
+library(Giotto)
+library(corrplot)
+#Set up Giotto
+instrs = createGiottoInstructions(save_dir = getwd(),
+                                  save_plot = TRUE,
+                                  show_plot = FALSE,
+                                  python_path = '/Users/jason/Software/miniconda3/envs/giotto/bin/pythonw')
+#Load Giotto functions (Optional) that are necessary for simplified spatial correlation analysis. Loading this way is not required if using the standard Giotto workflow for detecting spatially correlated genes.
+source('/Users/jason/Software/Giotto/R/spatial_genes.R')
+source('/Users/jason/Software/Giotto/R/general_help.R')
+source('/Users/jason/Software/Giotto/R/auxiliary_giotto.R')
+source('/Users/jason/Software/Giotto/R/spatial_structures.R')
+source('/Users/jason/Software/Giotto/R/cross_section.R')
+
+#Load custom functions
+source("/Users/jason/Documents/Biocore/Spatial Transcriptomics Workshop 2025/code/utility_functions.R")
+```
+
 ### Load the data
 
 We will load two samples from the paper to use here. We’ll use these to
