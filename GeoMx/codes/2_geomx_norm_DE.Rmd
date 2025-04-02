@@ -17,20 +17,21 @@ Perform normalization and initial visualization, followed by DE analysis.
 
 This script uses the output GeoMx object from the QC script. 
 It continues on the remaining steps for the Kidney dataset from: 
-(https://www.bioconductor.org/packages/release/workflows/vignettes/GeoMxWorkflows/inst/doc/GeomxTools_RNA-NGS_Analysis.html#5_Normalization)
+[GeoMxTools tutorial](https://www.bioconductor.org/packages/release/workflows/vignettes/GeoMxWorkflows/inst/doc/GeomxTools_RNA-NGS_Analysis.html)
 
 
 ## 1. Normalization
 
 We will calculate Q3 normalization, this method is suggested as the initial normalization to be used with DSP-NGS RNA data, unless the data requires more stringent normalization. 
 
-One of the key observations is the relationship between the upper quartile (Q3) of the counts in each segment with the negative control probes in the data, once aggregated, this 
-You are looking for a separation between them, with lower values for the negative control probes.
-Ideally, there should be a separation between these two values to ensure we have stable measure of Q3 signal. 
+One of the key observations is the relationship between the upper quartile (Q3) of the counts in each segment with the negative control probes in the data. Ideally we should see a separation between them, with lower values for the negative control probes, this suggest a stable measure of the Q3 signal.
 
-```{r}
+```{r, message = F, warning = F}
 library(tidyverse)
 library(GeomxTools)
+library(PCAtools)
+library(umap)
+library(ComplexHeatmap)
 
 ## Read tidy object. 
 geomx <- readRDS('../env/tidy_geomx_obj.RDS')
@@ -90,21 +91,21 @@ assayDataElement(object = geomx, elt = "log_q") <-
 
 
 ```{r box_raw_counts}
-boxplot(exprs(geomx), 
+boxplot(exprs(geomx)[,1:50], 
         col = "skyblue", main = "Raw Counts",
         log = "y", names = NULL, xlab = "Segment",
         ylab = "Counts, Raw")
 ```
 
 ```{r box_Q3_norm}
-boxplot(assayDataElement(geomx, elt = 'q_norm'), 
+boxplot(assayDataElement(geomx, elt = 'q_norm')[,1:50], 
         col = "green4", main = "Q3 normalization",
         log = "y", names = NULL, xlab = "Segment",
         ylab = "Q3")
 ```
 
 ```{r box_bg_norm}
-boxplot(assayDataElement(geomx, elt = 'neg_norm'), 
+boxplot(assayDataElement(geomx, elt = 'neg_norm')[,1:50], 
         col = "purple", main = "Background, neg normalization",
         log = "y", names = NULL, xlab = "Segment",
         ylab = "NegNorm")
@@ -116,8 +117,6 @@ To understand the variation in the data, biological signal and also potential ba
 
 ### PCA
 ```{r}
-library(PCAtools)
-
 pc = pca(assayDataElement(geomx, elt = "log_q"), scale = F, metadata = pData(geomx)) 
 
 screeplot(pc, components=1:50)
@@ -135,8 +134,6 @@ We can also use tSNE, but in this instance we will use UMAP.
 We can observe that variation is highly driven by the region of interest, and class. But there is still some clustering by slide. 
 
 ```{r}
-library(umap)
-
 # run UMAP: log2 Q3 normalized data
 umap_out <- umap(t( assayDataElement(geomx , elt = "q_norm") ))
 #> Found more than one class "dist" in cache; using the first, from namespace 'BiocGenerics'
@@ -156,8 +153,6 @@ ggplot(pData(geomx), aes(x = UMAP1, y = UMAP2, color = slide_name)) +
 ### Clustering high CV genes
 
 ```{r}
-library(ComplexHeatmap)
-
 ## Calculate CV
 calc_CV <- function(x) {sd(x) / mean(x)}
 CV_dat <- assayDataApply(geomx, elt = "log_q", MARGIN = 1, calc_CV)
@@ -175,7 +170,7 @@ Heatmap(assayDataElement(geomx[GOI, ], elt = "log_q"), name = 'log(Q3)', col = c
 
 ## DE analysis{.tabset}
 
-Within the `GeMxTools` package, DE analysis is done using a linear mixed-effect model, using the `lmerTest` package. This is prefered since we have multiple segments within the same slide or tissue sample, which are not independent from each other. This analysis is performed in log-normalized data.
+Within the `GeoMxTools` package, DE analysis is done using a linear mixed-effect model, using the `lmerTest` package. This is prefered since we have multiple segments within the same slide or tissue sample, which are not independent from each other. This analysis is performed in log-normalized data.
 
 Model: $log_2(gene) \sim InterestVariable\ +\ (1 + InterestVariable|Slide)$
 
@@ -280,4 +275,7 @@ for(celltype in levels(pData(geomx)$celltype) ) {
 make_volcano_plot(results2, split_by = 'Subset', pval = 0.05, logfc = log2(1.5))
 ```
 
-
+## Session information
+```{r session_additional_libraries}
+map(sessionInfo()$otherPkgs, ~.x$Version)
+```

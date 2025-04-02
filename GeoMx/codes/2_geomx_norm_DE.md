@@ -1,7 +1,6 @@
-
 # Normalization and DE analysis using `GeoMxTools`
 ### Author: Diana Vera Cruz
-### Date: 03/31/2025
+### Date: 04/01/2025
 
 ## Goals
 
@@ -12,7 +11,8 @@ analysis.
 
 This script uses the output GeoMx object from the QC script. It
 continues on the remaining steps for the Kidney dataset from:
-[GeoMx tutorial](https://www.bioconductor.org/packages/release/workflows/vignettes/GeoMxWorkflows/inst/doc/GeomxTools_RNA-NGS_Analysis.html
+[GeoMxTools
+tutorial](https://www.bioconductor.org/packages/release/workflows/vignettes/GeoMxWorkflows/inst/doc/GeomxTools_RNA-NGS_Analysis.html)
 
 ## 1. Normalization
 
@@ -22,14 +22,16 @@ requires more stringent normalization.
 
 One of the key observations is the relationship between the upper
 quartile (Q3) of the counts in each segment with the negative control
-probes in the data, once aggregated, this You are looking for a
-separation between them, with lower values for the negative control
-probes. Ideally, there should be a separation between these two values
-to ensure we have stable measure of Q3 signal.
+probes in the data. Ideally we should see a separation between them,
+with lower values for the negative control probes, this suggest a stable
+measure of the Q3 signal.
 
 ``` r
 library(tidyverse)
 library(GeomxTools)
+library(PCAtools)
+library(umap)
+library(ComplexHeatmap)
 
 ## Read tidy object. 
 geomx <- readRDS('../env/tidy_geomx_obj.RDS')
@@ -93,7 +95,7 @@ assayDataElement(object = geomx, elt = "log_q") <-
 ```
 
 ``` r
-boxplot(exprs(geomx), 
+boxplot(exprs(geomx)[,1:50], 
         col = "skyblue", main = "Raw Counts",
         log = "y", names = NULL, xlab = "Segment",
         ylab = "Counts, Raw")
@@ -102,7 +104,7 @@ boxplot(exprs(geomx),
 ![](2_geomx_norm_DE_files/figure-gfm/box_raw_counts-1.png)<!-- -->
 
 ``` r
-boxplot(assayDataElement(geomx, elt = 'q_norm'), 
+boxplot(assayDataElement(geomx, elt = 'q_norm')[,1:50], 
         col = "green4", main = "Q3 normalization",
         log = "y", names = NULL, xlab = "Segment",
         ylab = "Q3")
@@ -111,7 +113,7 @@ boxplot(assayDataElement(geomx, elt = 'q_norm'),
 ![](2_geomx_norm_DE_files/figure-gfm/box_Q3_norm-1.png)<!-- -->
 
 ``` r
-boxplot(assayDataElement(geomx, elt = 'neg_norm'), 
+boxplot(assayDataElement(geomx, elt = 'neg_norm')[,1:50], 
         col = "purple", main = "Background, neg normalization",
         log = "y", names = NULL, xlab = "Segment",
         ylab = "NegNorm")
@@ -127,8 +129,6 @@ potential batch effects, we will perform PCA, UMAP
 ### PCA
 
 ``` r
-library(PCAtools)
-
 pc = pca(assayDataElement(geomx, elt = "log_q"), scale = F, metadata = pData(geomx)) 
 
 screeplot(pc, components=1:50)
@@ -156,8 +156,6 @@ We can observe that variation is highly driven by the region of
 interest, and class. But there is still some clustering by slide.
 
 ``` r
-library(umap)
-
 # run UMAP: log2 Q3 normalized data
 umap_out <- umap(t( assayDataElement(geomx , elt = "q_norm") ))
 ```
@@ -188,8 +186,6 @@ ggplot(pData(geomx), aes(x = UMAP1, y = UMAP2, color = slide_name)) +
 ### Clustering high CV genes
 
 ``` r
-library(ComplexHeatmap)
-
 ## Calculate CV
 calc_CV <- function(x) {sd(x) / mean(x)}
 CV_dat <- assayDataApply(geomx, elt = "log_q", MARGIN = 1, calc_CV)
@@ -211,7 +207,7 @@ Heatmap(assayDataElement(geomx[GOI, ], elt = "log_q"), name = 'log(Q3)', col = c
 
 ## DE analysis
 
-Within the `GeMxTools` package, DE analysis is done using a linear
+Within the `GeoMxTools` package, DE analysis is done using a linear
 mixed-effect model, using the `lmerTest` package. This is prefered since
 we have multiple segments within the same slide or tissue sample, which
 are not independent from each other. This analysis is performed in
@@ -328,3 +324,66 @@ make_volcano_plot(results2, split_by = 'Subset', pval = 0.05, logfc = log2(1.5))
 ```
 
 ![](2_geomx_norm_DE_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+## Session information
+
+``` r
+map(sessionInfo()$otherPkgs, ~.x$Version)
+```
+
+    ## $ComplexHeatmap
+    ## [1] "2.22.0"
+    ## 
+    ## $umap
+    ## [1] "0.2.10.0"
+    ## 
+    ## $PCAtools
+    ## [1] "2.18.0"
+    ## 
+    ## $ggrepel
+    ## [1] "0.9.6"
+    ## 
+    ## $GeomxTools
+    ## [1] "3.10.0"
+    ## 
+    ## $NanoStringNCTools
+    ## [1] "1.14.0"
+    ## 
+    ## $S4Vectors
+    ## [1] "0.44.0"
+    ## 
+    ## $Biobase
+    ## [1] "2.66.0"
+    ## 
+    ## $BiocGenerics
+    ## [1] "0.52.0"
+    ## 
+    ## $lubridate
+    ## [1] "1.9.4"
+    ## 
+    ## $forcats
+    ## [1] "1.0.0"
+    ## 
+    ## $stringr
+    ## [1] "1.5.1"
+    ## 
+    ## $dplyr
+    ## [1] "1.1.4"
+    ## 
+    ## $purrr
+    ## [1] "1.0.4"
+    ## 
+    ## $readr
+    ## [1] "2.1.5"
+    ## 
+    ## $tidyr
+    ## [1] "1.3.1"
+    ## 
+    ## $tibble
+    ## [1] "3.2.1"
+    ## 
+    ## $ggplot2
+    ## [1] "3.5.1"
+    ## 
+    ## $tidyverse
+    ## [1] "2.0.0"

@@ -1,11 +1,11 @@
 # GeoMx: Dataset setup and QC
 ### Author: Diana Vera Cruz
-### Date: 03/31/2025
+### Date: 04/01/2025
 
 ## Introduction
 
 This tutorial was created to provide a step-by-step guide on how to set
-up a dataset for GeoMx analysis. This tutorial was inspired in the
+up a dataset for GeoMx analysis. This tutorial was inspired by the
 [GeoMxTools
 Tutorial](https://www.bioconductor.org/packages/release/workflows/vignettes/GeoMxWorkflows/inst/doc/GeomxTools_RNA-NGS_Analysis.html),
 which also uses this dataset. The tutorial will cover the following
@@ -13,7 +13,7 @@ steps:
 
 1.  Load and process the raw data
 
-2.  Perform quality control (QC) analysis
+2.  Perform quality control (QC) analysis: Segment and probe QC
 
 3.  Generate a dataset object for downstream analysis
 
@@ -31,9 +31,9 @@ focus on tubules or glomeruli regions.
 - Tubular: Each ROI contains multiple tubules, and are further
   classified into distal (PanCK+) or proximal (PanCK-) AOIs.
 
-**For the purposes of the tutorial, we simulated 3 columns: Number of
-nuclei, and X and Y coordinate per ROI, since the initial data did not
-have this fields.**
+**For this workshop, we simulated 3 columns: Number of nuclei, and X and
+Y coordinates per ROI, since the original data did not have these
+fields.**
 
 ## Raw data
 
@@ -48,13 +48,16 @@ To generate the complete dataset object we will need 3 types of files:
 3.  **PKC files**: Probes / genes level information. Normally is just
     one, for the organism of reference.
 
-### Considerations prior data loading
+### Considerations prior to data loading
 
 One of the key issues when loading the data is missing information from
-the segments metadata. This is normally is due to the fact that the
-columns are not named as expected. upper or lower case seems to work,
-but you can try various alternatives to make sure this data is
-available. Make sure you have columns for:
+the segments metadata, that is available in the annotation excel. This
+is normally due to the fact that the columns are not named as expected.
+Upper or lower case names seem to work, but you can try various
+alternatives to make sure this data is available after creating the
+object.
+
+Make sure you have columns for:
 
 - Sample_ID: Unique identifier for each segment, this also match the DCC
   files names.
@@ -204,9 +207,10 @@ Data sets
 
 ### Sample overview
 
-Always check the samples, In this case, the full data includes some
-ROIs/AOIs that we do not need for the analysis so we can do some
-filtering before QC.
+Always check the samples, Make sure you keep only the segments that you
+care for. In this case, the data is pre-filtered, glomerulus regions are
+complete, whereas tubules are split by expression of PanCK, which
+expression is related to distal versus proximal tubules.
 
 ``` r
 library(networkD3)
@@ -371,12 +375,6 @@ QC_histogram <- function(assay_data = NULL,
 QC_histogram(sData(geomxdt), "Trimmed (%)", col_by, QC_params$percentTrimmed)
 ```
 
-    ## Warning: `aes_string()` was deprecated in ggplot2 3.0.0.
-    ## ℹ Please use tidy evaluation idioms with `aes()`.
-    ## ℹ See also `vignette("ggplot2-in-packages")` for more information.
-    ## This warning is displayed once every 8 hours.
-    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was generated.
-
 ![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
 #### Stitched reads
@@ -406,7 +404,7 @@ QC_histogram(sData(geomxdt), "Saturated (%)", col_by, QC_params$percentSaturatio
 
 #### Area and number of nuclei
 
-When data is available, explore this variables, there should be
+When data is available, explore these variables, there should be
 correlation between both, but all this should be guided by your
 biological expectations (Cell type, tissue, phenotype)
 
@@ -421,9 +419,10 @@ QC_histogram(sData(geomxdt), "nuclei", col_by, QC_params$minNuclei) +
 
 #### Segment area
 
-When data is available for number of nuclei, explore this variables,
-there should be correlation between both, but all this should be guided
-by your biological expectations (Cell type, tissue, phenotype)
+When the number of nuclei is available, explore this variables. There
+should be correlation between number of nuclei and segment area, but all
+this should be guided by your biological expectations (Cell type,
+tissue, phenotype)
 
 ``` r
 QC_histogram(sData(geomxdt), "area", col_by, QC_params$minArea, scale_trans = "log10") +
@@ -458,13 +457,20 @@ sData(geomxdt) %>% ggplot(aes(x = NTC, y = NegProbe_pct)) + geom_point() + theme
 
 ![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-11-2.png)<!-- -->
 
-#### Geometric Means: Gene expression
+#### Geometric Means of negative probes.
 
-Geometric Mean per segment, this is done by module (If more that I probe
-panel used, each module represents a panel)
+**Negative probes** are used to establish the background count level per
+segment. They represent synthetic oligonucleotide probes that are not
+complementary to any known transcript in the organism of interest,
+representing background noise (Non-specific binding, autofluorescence,
+instrument noise, etc).
+
+The calculation of Geometric Mean of negative probes per segment, this
+is done by module (If more than 1 probe panel used, each module
+represents a probe panel).
 
 ``` r
-# calculate the negative geometric means for each module
+# calculate the Geometric means of negative probes for each module
 negativeGeoMeans <- 
     esBy(negativeControlSubset(geomxdt), 
          GROUP = "Module", 
@@ -474,7 +480,7 @@ negativeGeoMeans <-
          }) 
 protocolData(geomxdt)[["NegGeoMean"]] <- negativeGeoMeans
 
-# explicitly copy the Negative geoMeans from sData to pData
+# explicitly copy the geoMeans of Negative probes from sData to pData
 negCols <- paste0("NegGeoMean_", modules)
 pData(geomxdt)[, negCols] <- sData(geomxdt)[["NegGeoMean"]]
 for(ann in negCols) {
@@ -552,8 +558,8 @@ The goal is to remove low performance probes, which can be due to poor
 hybridization, low specificity, or other technical issues. WTA libraries
 have one probe per gene.
 
-A probe should be removed if: \* Geometric mean of probe counts across
-segments / geometric mean of all probe counts \< 0.1
+A probe should be removed if: **Geometric mean of probe counts across
+segments / geometric mean of all probe counts \< 0.1**
 
 ``` r
 geomxdt <- setBioProbeQCFlags(geomxdt, 
@@ -633,34 +639,39 @@ write_tsv(sam_anno, file = file.path(out_dir,'results','raw_metadata.tsv'))
 
 Limit of quantification per segment, calculated on the distribution of
 negative control probes, and is intended to approximate the quantifiable
-limit of gene expression per segment. More stable in larger segments,
-also not great for segments with low negative probe counts.
+limit of gene expression per segment. This metric is more stable in
+larger segments, also not great for segments with low negative probe
+counts.
 
-$LOQ=geomean(NegProbe)*geoSD(NegProbe)^n$ *, where n is normally equal
-to 2.*
+$LOQ=Geometric\ Mean(NegProbe)*Geometric\ SD(NegProbe)^n$ *, where n is
+normally equal to 2.*
 
-LOQ with a minimum of 2 as threshold.
+LOQ with a minimum of 2 as threshold, and the n variable is related to
+the number of SD to be used.
 
 ``` r
 # Define LOQ SD threshold and minimum value
-cutoff = 2
+n = 2 ## Number of SD to be used, normally 2.
 minLOQ = 2
 
 # Calculate LOQ per module tested
 LOQ = data.frame(row.names = colnames(target_data))
 for(module in modules) {
-    vars <- paste0(c("NegGeoMean_", "NegGeoSD_"),
-                   module)
+    vars <- paste0(c("NegGeoMean_", "NegGeoSD_"), module)
     if(all(vars[1:2] %in% colnames(pData(target_data)))) {
-        LOQ[, module] <-
-            pmax(minLOQ,
-                 pData(target_data)[, vars[1]] * 
-                     pData(target_data)[, vars[2]] ^ cutoff)
+        LOQ[, module] <- pmax(minLOQ, pData(target_data)[, vars[1]] * pData(target_data)[, vars[2]] ^ n)
     }
 }
 pData(target_data)$LOQ = LOQ
 pData(target_data)$segment_name = rownames(pData(target_data))
 ```
+
+``` r
+ggplot(pData(target_data)$LOQ, aes(x = Hs_R_NGS_WTA_v1.0)) + geom_histogram() + theme_bw() + 
+  labs(y = 'Number of segments', title = 'LOQ in Negative Control Probes per segment')
+```
+
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 ### 5. Filtering
 
@@ -673,6 +684,7 @@ We determine the number of genes detected in each segment across the
 dataset.
 
 ``` r
+## Matrix: Gene * segment: Is this gene counts higher than then segment LOQ for Negative probes.
 LOQ_Mat <- c()
 for(module in modules) {
     ind <- fData(target_data)$Module == module
@@ -695,10 +707,8 @@ distribution of segments with respect to their % genes detected:
 
 ``` r
 # Save detection rate information to pheno data
-pData(target_data)$GenesDetected <- 
-    colSums(LOQ_Mat, na.rm = TRUE)
-pData(target_data)$GeneDetectionRate <-
-    pData(target_data)$GenesDetected / nrow(target_data)
+pData(target_data)$GenesDetected <- colSums(LOQ_Mat, na.rm = TRUE)
+pData(target_data)$GeneDetectionRate <- pData(target_data)$GenesDetected / nrow(target_data)
 
 # Determine detection thresholds: 1%, 5%, 10%, 15%, >15%
 pData(target_data)$DetectionThreshold <- 
@@ -718,7 +728,7 @@ ggplot(pData(target_data),
          fill = "Segment type")
 ```
 
-![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
 In this example, we choose to remove segments with less than 10% of the
 genes detected. Generally, 5-10% detection is a reasonable segment
@@ -737,7 +747,7 @@ dim(target_data)
 
 ``` r
 count_mat = dplyr::count(sData(geomxdt), class, region, segment, slide_name) %>% 
-  mutate(Slide = gsub('^.+ (S\\d)-.+$', '\\1', slide_name)) #%>% select(-slide_name)
+  mutate(Slide = gsub('^.+ (S\\d)-.+$', '\\1', slide_name))
 
 ## Current 
 ggplot(count_mat, aes(x = Slide, y = n, fill = segment)) + 
@@ -745,7 +755,7 @@ ggplot(count_mat, aes(x = Slide, y = n, fill = segment)) +
   theme_bw() + labs(title = 'Samples overview (mouse*condition)') 
 ```
 
-![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
 
 #### Gene detection rate
 
@@ -797,7 +807,7 @@ ggplot(plot_detect, aes(x = as.factor(Freq), y = Rate, fill = Rate)) +
          y = "Genes Detected, % of Panel > LOQ")
 ```
 
-![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
 
 We typically set a % Segment cutoff ranging from 5-20% based on the
 biological diversity of our dataset. For this study, we will select 10%
@@ -899,6 +909,21 @@ map(sessionInfo()$otherPkgs, ~.x$Version)
     ## $matrixStats
     ## [1] "1.5.0"
     ## 
+    ## $GeomxTools
+    ## [1] "3.5.0"
+    ## 
+    ## $NanoStringNCTools
+    ## [1] "1.10.1"
+    ## 
+    ## $S4Vectors
+    ## [1] "0.40.2"
+    ## 
+    ## $Biobase
+    ## [1] "2.62.0"
+    ## 
+    ## $BiocGenerics
+    ## [1] "0.48.1"
+    ## 
     ## $readxl
     ## [1] "1.4.3"
     ## 
@@ -926,35 +951,8 @@ map(sessionInfo()$otherPkgs, ~.x$Version)
     ## $tibble
     ## [1] "3.2.1"
     ## 
-    ## $tidyverse
-    ## [1] "2.0.0"
-    ## 
-    ## $harmony
-    ## [1] "1.2.3"
-    ## 
-    ## $Rcpp
-    ## [1] "1.0.14"
-    ## 
-    ## $SeuratObject
-    ## [1] "4.1.4"
-    ## 
-    ## $Seurat
-    ## [1] "4.4.0"
-    ## 
-    ## $GeomxTools
-    ## [1] "3.5.0"
-    ## 
-    ## $NanoStringNCTools
-    ## [1] "1.10.1"
-    ## 
     ## $ggplot2
     ## [1] "3.5.1"
     ## 
-    ## $S4Vectors
-    ## [1] "0.40.2"
-    ## 
-    ## $Biobase
-    ## [1] "2.62.0"
-    ## 
-    ## $BiocGenerics
-    ## [1] "0.48.1"
+    ## $tidyverse
+    ## [1] "2.0.0"
