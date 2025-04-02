@@ -25,6 +25,14 @@ renamed as “filtered_feature_bc_matrix.h5”. After doing so, you will
 have the minimum requirements necessary to load the data into Seurat.
 
 ------------------------------------------------------------------------
+### Load libraries
+``` r
+library(Seurat, lib.loc = '/Library/Frameworks/R.framework/Resources/library_alternate/')
+library(dplyr)
+library(RColorBrewer)
+library(ggplot2)
+library(patchwork)
+```
 
 ### Load the data and explore the structure of the Seurat object
 
