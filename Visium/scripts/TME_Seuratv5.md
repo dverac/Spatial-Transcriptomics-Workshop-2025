@@ -41,6 +41,14 @@ We merge the data just as we would with scRNA data.
 data.merge = merge(data1, data2)
 ```
 
+### Visualize the data
+
+``` r
+SpatialFeaturePlot(data.merge, c('nCount_Spatial','nFeature_Spatial'), pt.size.factor = 45, ncol = 2)
+```
+
+![](TME_Seuratv5_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
 ### Distance Analysis with Giotto
 
 We’ll use Giotto to help identify the distances between spots that
@@ -75,7 +83,7 @@ giotto_obj=createGiottoObject(raw_exprs = counts,
                                    instructions = instrs)
 ```
 
-<img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-5-1.png" width="100%" />
+<img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-6-1.png" width="100%" />
 
 ### Create the spatial network
 
@@ -139,7 +147,7 @@ p2 = SpatialDimPlot(data.merge, group.by='dc1', images='B11',pt.size.factor=45)+
 p1+p2
 ```
 
-<img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-8-1.png" width="100%" />
+<img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-9-1.png" width="100%" />
 Next, we build the distance distributions
 
 ``` r
@@ -161,7 +169,7 @@ ggplot(dist_summary, aes(x=MinDist))+facet_wrap(vars(SpotType))+geom_histogram(b
   theme(text=element_text(face='bold', size=15))
 ```
 
-<img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-10-1.png" width="100%" />
+<img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-11-1.png" width="100%" />
 
 The basic histograms can be quite informative. First, note that the 0s
 in each represent the CD8+ cDC1+ spots and have the same count in either
@@ -207,7 +215,7 @@ SpatialDimPlot(data.merge, group.by='Legend', pt.size.factor=45,images='B11')+
         legend.text = element_text(size=16),legend.key.size = unit(8,'mm'))
 ```
 
-<img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-11-1.png" width="100%" />
+<img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-12-1.png" width="100%" />
 
 #### A Note on Differential Expression Analysis
 
@@ -244,7 +252,7 @@ cor_res = getSpatCorGeneSigValues(giotto_obj, goi)
 corrplot(cor_res$cormat, p.mat=cor_res$pmat, order='AOE', diag=FALSE, col=rev(COL2('RdBu',200)), type='upper', title='Spatial Correlations', mar=c(0,0,2,0), sig.level=c(.001, .01, .05), insig='label_sig',method='circle',pch.cex=1)
 ```
 
-<img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-12-1.png" width="100%" />
+<img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-13-1.png" width="100%" />
 
 This basic analysis suggests a positive spatial correlation between
 dendritic cell and T-cell markers but a weak negative correlation
@@ -286,7 +294,7 @@ DefaultAssay(refdata) = 'SCT'
 DimPlot(refdata, group.by='celltype', label=TRUE, label.size=4, repel=TRUE)
 ```
 
-<img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-14-1.png" width="100%" />
+<img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-15-1.png" width="100%" />
 
 ### Transfer anchors
 
@@ -311,7 +319,7 @@ DefaultAssay(data1) = 'predictions'
 SpatialFeaturePlot(data1, features = c('CD8 T-cell','cDC1'), pt.size.factor=45)
 ```
 
-<img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-16-1.png" width="100%" />
+<img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-17-1.png" width="100%" />
 
 With this updated method for scoring spots, we could potentially extend
 the number of relevent loci in an updated analysis. Additionally, there
@@ -330,7 +338,7 @@ requires further attention.
 SpatialFeaturePlot(data.merge, features=c('CD3E', 'CD4', 'CD8A', 'GZMK'), images='B11', ncol = 2, pt.size.factor=45)
 ```
 
-<img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-17-1.png" width="100%" />
+![](TME_Seuratv5_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 ### Spatial Correlations between cell types
 
@@ -352,7 +360,7 @@ cor_res_cells = getSpatCorGeneSigValues(giotto_cellpred, giotto_cellpred@gene_ID
 corrplot(cor_res_cells$cormat, p.mat=cor_res_cells$pmat, order='AOE', diag=FALSE, col=rev(COL2('RdBu',200)), type='upper', title='Spatial Correlations', mar=c(0,0,2,0), sig.level=c(.001, .01, .05), insig='label_sig',method='circle',pch.cex=1)
 ```
 
-<img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-20-1.png" width="100%" />
+<img src="TME_Seuratv5_files/figure-gfm/unnamed-chunk-21-1.png" width="100%" />
 
 The results generally seem sensible and agree with visual inspection of
 the prediction scores. They do not entirely agree with the relationship

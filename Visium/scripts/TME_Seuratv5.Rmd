@@ -59,6 +59,11 @@ We merge the data just as we would with scRNA data.
 data.merge = merge(data1, data2)
 ```
 
+### Visualize the data
+```{r, echo=TRUE, fig.width=8, fig.height=8}
+SpatialFeaturePlot(data.merge, c('nCount_Spatial','nFeature_Spatial'), pt.size.factor = 45, ncol = 2)
+```
+
 ### Distance Analysis with Giotto
 We'll use Giotto to help identify the distances between spots that express different genes of interest. In the original study, this was used to identify spots that expressed CD8 T-cell markers that were either near or far from spots expressing cDC1 markers. First, we'll prepare the Giotto object.
 
@@ -240,7 +245,7 @@ With this updated method for scoring spots, we could potentially extend the numb
 #### Recommended: Always validate deconvolution by checking additional known markers
 In the plots above, we note that the CD8 T-cell predictions include clusters of spots that were not CD8+ in previous plots. Below, we check several common T-cell markers and find that none overlap with these locations. This could indicate a problem with the scRNA reference that requires further attention.
 
-```{r, echo=TRUE, out.width="100%"}
+```{r, echo=TRUE, fig.width=8, fig.height=8}
 SpatialFeaturePlot(data.merge, features=c('CD3E', 'CD4', 'CD8A', 'GZMK'), images='B11', ncol = 2, pt.size.factor=45)
 ```
 
