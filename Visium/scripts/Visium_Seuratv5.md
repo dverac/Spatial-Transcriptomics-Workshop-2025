@@ -27,7 +27,7 @@ have the minimum requirements necessary to load the data into Seurat.
 ------------------------------------------------------------------------
 ### Load libraries
 ``` r
-library(Seurat, lib.loc = '/Library/Frameworks/R.framework/Resources/library_alternate/')
+library(Seurat)
 library(dplyr)
 library(RColorBrewer)
 library(ggplot2)
