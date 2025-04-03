@@ -219,6 +219,11 @@ we have multiple segments within the same slide or tissue sample, which
 are not independent from each other. This analysis is performed in
 log-normalized data.
 
+Two versions:
+
+1.  Random slope: When comparing segments that co-exist in the tissue
+    section. (Different cell types or regions)
+
 Model:
 $`log_2(gene) \sim InterestVariable\ +\ (1 + InterestVariable|Slide)`$
 
@@ -228,13 +233,11 @@ effect of the variable of interest may vary between slides, and the
 random intercept (After the **\|**) accounts for the fact that the
 overall expression level of the gene may vary between slides.
 
-Two versions:
-
-1.  Random slope: When comparing segments that co-exist in the tissue
-    section. (Different cell types or regions)
-
 2.  Without random slope: When comparing segments that are independent
     from each other. (Different slides)
+
+Model:
+$`log_2(gene) \sim InterestVariable\ +\ (1 |Slide)`$
 
 ### Glomerulus versus Tubules
 
