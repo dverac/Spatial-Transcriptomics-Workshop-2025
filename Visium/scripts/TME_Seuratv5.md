@@ -5,9 +5,9 @@
 ### Introduction
 
 In this section, we will explore two samples from a study of the tumor
-microenvironment. Data in this section is taken from [Ziblat et al
+microenvironment. Data in this section are taken from [Ziblat et al
 2024](https://www.cell.com/cell-reports/fulltext/S2211-1247(24)00469-8).
-The example data is pre-processed and available [here](box%20link) on
+The example data are pre-processed and available [here](https://uchicago.box.com/s/pbsklrnue31wvq10qohlh7x9hev1nfaq) on
 Box. The full data are also available from [GEO:
 GSE238145](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE238145).
 
