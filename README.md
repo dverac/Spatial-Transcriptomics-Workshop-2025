@@ -6,12 +6,12 @@
 |Topic |Materials |Type |
 |------|-----|------|
 |Overview|[slides](https://uchicago.box.com/s/al70n7ccu1ccfw3k6p5zahgcy1dh5h3m)|Slides|
-|Visium Example 1|[Seurat vignette](https://github.com/CRI-Biocore/Spatial-Transcriptomics-Workshop-2025/blob/main/Visium/scripts/Visium_Seuratv5.md)|Markdown and Rmd |
-|Visium Example 2|[Tumor microenvironment](https://github.com/CRI-Biocore/Spatial-Transcriptomics-Workshop-2025/blob/main/Visium/scripts/TME_Seuratv5.md)|Markdown and Rmd |
+|Visium Example 1|[Seurat vignette](Visium/scripts/Visium_Seuratv5.md)|Markdown and Rmd |
+|Visium Example 2|[Tumor microenvironment](Visium/scripts/TME_Seuratv5.md)|Markdown and Rmd |
 |GeoMx QC|[1_geomx_setup_qc](GeoMx/codes/1_geomx_setup_qc.md)|Markdown and Rmd |
 |GeoMx DE Geomxtools|[2_geomx_norm_DE](GeoMx/codes/2_geomx_norm_DE.md)|Markdown and Rmd |
 |GeoMx DE standR,limma|[2B_geomx_standR_norm_DE](GeoMx/codes/2B_geomx_standR_norm_DE.md)|Markdown and Rmd |
-|GeoMx DE limma|[2C_geomx_limma_norm_DE](codes/2C_geomx_limma_norm_DE.md)| Markdown and Rmd|
+|GeoMx DE limma|[2C_geomx_limma_norm_DE](GeoMx/codes/2C_geomx_limma_norm_DE.md)| Markdown and Rmd|
 |GeoMx - Spatial Deconvolution|[geomx_SpatialDecon](GeoMx/codes/geomx_SpatialDecon.md)|Markdown and Rmd |
 |GeoMx - Seurat conversion|[geomx_Seurat](GeoMx/codes/geomx_Seurat.md)|Markdown and Rmd |
 
