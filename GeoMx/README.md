@@ -82,6 +82,6 @@ For each script, there is an md and Rmd file.
   Contains a list of the organs and tissues that have been studied. The datasets can be downloaded from this site.
   
   * [Nanostring Spatial tissue book](https://nanostring.com/products/geomx-digital-spatial-profiler/spatial-organ-atlas/)
-    Contains the description of various studies, a study summary, and the purpose, including an overview of the slides, the number of genes, and the separation between segments. 
+    Contains the description of various studies, a study summary, and the purpose, including an overview of the slides, the number of genes, and the separation between segments. [Study example](https://uchicago.box.com/s/dxb6zi84jhff0frtw52ljqpy4gi4109z)
 
 
