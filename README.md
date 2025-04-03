@@ -5,7 +5,7 @@
 
 |Topic |Materials |Type |
 |------|-----|------|
-|Overview|[slides](link-to-powerpoint)|Slides|
+|Overview|[slides](https://uchicago.box.com/s/al70n7ccu1ccfw3k6p5zahgcy1dh5h3m)|Slides|
 |Visium Example 1|[Seurat vignette](https://github.com/CRI-Biocore/Spatial-Transcriptomics-Workshop-2025/blob/main/Visium/scripts/Visium_Seuratv5.md)|Markdown and Rmd |
 |Visium Example 2|[Tumor microenvironment](https://github.com/CRI-Biocore/Spatial-Transcriptomics-Workshop-2025/blob/main/Visium/scripts/TME_Seuratv5.md)|Markdown and Rmd |
 |GeoMx QC|[1_geomx_setup_qc](GeoMx/codes/1_geomx_setup_qc.md)|Markdown and Rmd |
