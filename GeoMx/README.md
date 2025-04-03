@@ -39,6 +39,8 @@ For each script, there is an md and Rmd file.
 
 [2B_geomx_standR_norm_DE](codes/2B_geomx_standR_norm_DE.md)
 
+[2C_geomx_limma_norm_DE](codes/2C_geomx_limma_norm_DE.md)
+
 ### Spatial Deconvolution
 [geomx_SpatialDecon](codes/geomx_SpatialDecon.md)
 
