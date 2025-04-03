@@ -32,20 +32,22 @@ NanoStringGeoMxSet and SpatialExperiment  objects are in the **env** folder.
 For each script, there is an md and Rmd file.
 
 ### 1. QC
-[1_geomx_setup_qc](codes/1_geomx_setup_qc.md)
 
-### 2. Normalization and DE analysis
-[2_geomx_norm_DE](codes/2_geomx_norm_DE.md)
+[1_geomx_setup_qc](codes/1_geomx_setup_qc.md): Segment and Probe QC.
 
-[2B_geomx_standR_norm_DE](codes/2B_geomx_standR_norm_DE.md)
+### 2. Normalization and DE analysis. 
 
-[2C_geomx_limma_norm_DE](codes/2C_geomx_limma_norm_DE.md)
+[2_geomx_norm_DE](codes/2_geomx_norm_DE.md) DE analysis using GeomxTools, and LMM to adjust for batch. 
+
+[2B_geomx_standR_norm_DE](codes/2B_geomx_standR_norm_DE.md): Extended version, various normalization methods, batch removal methods and DE analysis using Limma, adjusting for batch in model or using batch-corrected data.
+
+[2C_geomx_limma_norm_DE](codes/2C_geomx_limma_norm_DE.md): DE analysis using Limma, adjusting for batch in model. 
 
 ### Spatial Deconvolution
-[geomx_SpatialDecon](codes/geomx_SpatialDecon.md)
+[geomx_SpatialDecon](codes/geomx_SpatialDecon.md): Cell type abundances per segment inferred from a reference set. 
 
 ### Conversion to Seurat
-[geomx_Seurat](codes/geomx_Seurat.md)
+[geomx_Seurat](codes/geomx_Seurat.md): Convert your data to Seurat.
 
 
 ## R packages
