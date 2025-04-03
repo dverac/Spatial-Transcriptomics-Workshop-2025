@@ -173,15 +173,18 @@ Heatmap(assayDataElement(geomx[GOI, ], elt = "log_q"), name = 'log(Q3)', col = c
 
 Within the `GeoMxTools` package, DE analysis is done using a linear mixed-effect model, using the `lmerTest` package. This is prefered since we have multiple segments within the same slide or tissue sample, which are not independent from each other. This analysis is performed in log-normalized data.
 
+Two versions: 
+
+  1. Random slope: When comparing co-existing segments in the tissue section. (Different cell types or regions)
+  
 Model: $log_2(gene) \sim InterestVariable\ +\ (1 + InterestVariable|Slide)$
 
 within the **(1 + InterestVariable|Slide)** term, the random slope, terms prior to the **|**, is used to account for the fact that the effect of the variable of interest may vary between slides, and the random intercept (After the **|**) accounts for the fact that the overall expression level of the gene may vary between slides.
 
-Two versions: 
-
-  1. Random slope: When comparing segments that co-exist in the tissue section. (Different cell types or regions)
   
   2. Without random slope: When comparing segments that are independent from each other. (Different slides)
+  
+Model: $log_2(gene) \sim InterestVariable\ +\ (1 |Slide)$
 
 ### Glomerulus versus Tubules
 ```{r, message = F, warning = F}
