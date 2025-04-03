@@ -11,11 +11,13 @@
 |GeoMx QC|[1_geomx_setup_qc](GeoMx/codes/1_geomx_setup_qc.md)|Markdown and Rmd |
 |GeoMx DE Geomxtools|[2_geomx_norm_DE](GeoMx/codes/2_geomx_norm_DE.md)|Markdown and Rmd |
 |GeoMx DE standR,limma|[2B_geomx_standR_norm_DE](GeoMx/codes/2B_geomx_standR_norm_DE.md)|Markdown and Rmd |
+|GeoMx DE limma|[2C_geomx_limma_norm_DE](codes/2C_geomx_limma_norm_DE.md)| Markdown and Rmd|
 |GeoMx - Spatial Deconvolution|[geomx_SpatialDecon](GeoMx/codes/geomx_SpatialDecon.md)|Markdown and Rmd |
 |GeoMx - Seurat conversion|[geomx_Seurat](GeoMx/codes/geomx_Seurat.md)|Markdown and Rmd |
 
-These materials are provided as part of the workshop *Introduction to Spatial Transcriptomics* held on April 3rd, 2025 at the University of Chicago. The workshop
-covers the basics of analyzing data from 10X Genomics' Visium platform and from NanoString's GeoMx platform. For additional details on the example code and datasets used for
+
+These materials are provided as part of the workshop *Introduction to Spatial Transcriptomics* held on April 3rd, 2025, at the University of Chicago. The workshop
+covers the basics of analyzing data from 10X Genomics' Visium platform and NanoString's GeoMx platform. For additional details on the example code and datasets used for
 each section, please start from the separate folders for [Visium](https://github.com/CRI-Biocore/Spatial-Transcriptomics-Workshop-2025/tree/main/Visium) or [GeoMx](https://github.com/CRI-Biocore/Spatial-Transcriptomics-Workshop-2025/tree/main/GeoMX).
 
 
