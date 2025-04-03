@@ -1,6 +1,6 @@
-# GeoMx: Dataset setup and QC
-### Author: Diana Vera Cruz
-### Date: 04/01/2025
+# GeoMx Dataset setup and QC
+### Diana Vera Cruz
+### 04/03/2025
 
 ## Introduction
 
@@ -91,7 +91,6 @@ library("ggalluvial")
 out_dir = '..' ## Or full path for the desired output directory.
 if(!dir.exists(file.path(out_dir, 'env'))) dir.create( file.path(out_dir, 'env') )
 if(!dir.exists(file.path(out_dir, 'results'))) dir.create(file.path(out_dir, 'results') )
-tab_format = "markdown" ## or 
 ```
 
 ### Raw data: DCC, PKC and annotation
@@ -113,8 +112,10 @@ length(DCC_files)
 DCC_files[1:5]
 ```
 
-    ## [1] "../Kidney_Dataset/dccs/DSP-1001250007851-H-A02.dcc" "../Kidney_Dataset/dccs/DSP-1001250007851-H-A03.dcc"
-    ## [3] "../Kidney_Dataset/dccs/DSP-1001250007851-H-A04.dcc" "../Kidney_Dataset/dccs/DSP-1001250007851-H-A05.dcc"
+    ## [1] "../Kidney_Dataset/dccs/DSP-1001250007851-H-A02.dcc"
+    ## [2] "../Kidney_Dataset/dccs/DSP-1001250007851-H-A03.dcc"
+    ## [3] "../Kidney_Dataset/dccs/DSP-1001250007851-H-A04.dcc"
+    ## [4] "../Kidney_Dataset/dccs/DSP-1001250007851-H-A05.dcc"
     ## [5] "../Kidney_Dataset/dccs/DSP-1001250007851-H-A06.dcc"
 
 ``` r
@@ -188,6 +189,44 @@ counts and normalizations and other transformations.
 
 - assayDataElement(geomx_obj, elt = “assay)name”)
 
+**sData columns**
+
+``` r
+sData(geomxdt) %>% names
+```
+
+    ##  [1] "construct"         "instrument_type"   "read_pattern"     
+    ##  [4] "expected_neg"      "slide_name"        "class"            
+    ##  [7] "segment"           "area"              "region"           
+    ## [10] "pathology"         "nuclei"            "ROI_Coordinate_X" 
+    ## [13] "ROI_Coordinate_Y"  "FileVersion"       "SoftwareVersion"  
+    ## [16] "Date"              "SampleID"          "Plate_ID"         
+    ## [19] "Well"              "SeqSetId"          "Raw"              
+    ## [22] "Trimmed"           "Stitched"          "Aligned"          
+    ## [25] "umiQ30"            "rtsQ30"            "DeduplicatedReads"
+    ## [28] "roi"               "aoi"
+
+**pData structure**
+
+``` r
+pData(geomxdt) %>% str
+```
+
+    ## 'data.frame':    235 obs. of  13 variables:
+    ##  $ construct       : chr  "directPCR" "directPCR" "directPCR" "directPCR" ...
+    ##  $ instrument_type : chr  "NextSeq" "NextSeq" "NextSeq" "NextSeq" ...
+    ##  $ read_pattern    : chr  "2x27" "2x27" "2x27" "2x27" ...
+    ##  $ expected_neg    : num  0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ slide_name      : chr  "disease3" "disease3" "disease3" "disease3" ...
+    ##  $ class           : chr  "DKD" "DKD" "DKD" "DKD" ...
+    ##  $ segment         : chr  "Geometric Segment" "Geometric Segment" "Geometric Segment" "Geometric Segment" ...
+    ##  $ area            : num  31798 16920 14312 20033 27583 ...
+    ##  $ region          : chr  "glomerulus" "glomerulus" "glomerulus" "glomerulus" ...
+    ##  $ pathology       : chr  "abnormal" "abnormal" "abnormal" "abnormal" ...
+    ##  $ nuclei          : num  225 132 114 89 132 169 105 55 164 92 ...
+    ##  $ ROI_Coordinate_X: num  89.1 237.7 174 184.3 374.3 ...
+    ##  $ ROI_Coordinate_Y: num  108.4 124.2 167.8 69.4 177.3 ...
+
 ### Probes panel
 
 Whole genome atlas for Human.
@@ -247,9 +286,15 @@ ggplot(df, aes(axis1 = slide_name, axis2 = class, axis3 = region, axis4 = segmen
   labs(title = "Samples overview", x = 'Variables', y = NULL)
 ```
 
-![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
 ## QC & preprocessing
+
+**Negative probes (or No template control probes)** are used to
+establish the background count level per segment. They represent
+synthetic oligonucleotide probes that are not complementary to any known
+transcript in the organism of interest, representing background noise
+(Non-specific binding, autofluorescence, instrument noise, etc).
 
 ### 1. Segment QC
 
@@ -260,8 +305,9 @@ ggplot(df, aes(axis1 = slide_name, axis2 = class, axis3 = region, axis4 = segmen
 - **%aligned, % trimmed**reads: Segments \<80% for any of this are
   removed.
 
-- **%Sequence saturation** ($1-\frac{Unique\ reads}{Aligned\ reads}$%):
-  Segments \< 50% require more reads and should not be analyzed.
+- **%Sequence saturation**
+  ($`1-\frac{Unique\ reads}{Aligned\ reads}`$%): Segments \< 50% require
+  more reads and should not be analyzed.
 
 - **Negative Count**: Geometric mean of unique negative probes of the
   panel that do not target mRNA but are to establish background count
@@ -375,7 +421,7 @@ QC_histogram <- function(assay_data = NULL,
 QC_histogram(sData(geomxdt), "Trimmed (%)", col_by, QC_params$percentTrimmed)
 ```
 
-![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 #### Stitched reads
 
@@ -383,7 +429,7 @@ QC_histogram(sData(geomxdt), "Trimmed (%)", col_by, QC_params$percentTrimmed)
 QC_histogram(sData(geomxdt), "Stitched (%)", col_by, QC_params$percentStitched)
 ```
 
-![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 #### Aligned reads
 
@@ -391,7 +437,7 @@ QC_histogram(sData(geomxdt), "Stitched (%)", col_by, QC_params$percentStitched)
 QC_histogram(sData(geomxdt), "Aligned (%)", col_by, QC_params$percentAligned)
 ```
 
-![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 #### Sequence saturation
 
@@ -400,7 +446,7 @@ QC_histogram(sData(geomxdt), "Saturated (%)", col_by, QC_params$percentSaturatio
     labs(title = "Sequencing Saturation (%)", x = "Sequencing Saturation (%)")
 ```
 
-![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 #### Area and number of nuclei
 
@@ -415,7 +461,7 @@ QC_histogram(sData(geomxdt), "nuclei", col_by, QC_params$minNuclei) +
     labs(title = "Number of nuclei", x = "Number of nuclei")
 ```
 
-![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 #### Segment area
 
@@ -429,7 +475,7 @@ QC_histogram(sData(geomxdt), "area", col_by, QC_params$minArea, scale_trans = "l
     labs(title = "Segment area", x = "Segment Area")
 ```
 
-![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 ``` r
 ggplot(sData(geomxdt), aes(x = nuclei, y = area, color = segment, shape = region)) + geom_point() + 
@@ -448,22 +494,16 @@ QC_histogram(sData(geomxdt), "NTC", col_by, QC_params$maxNTCCount) +
   geom_vline(xintercept = 10000, color = 'red3')
 ```
 
-![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 ``` r
 sData(geomxdt) %>% ggplot(aes(x = NTC, y = NegProbe_pct)) + geom_point() + theme_bw() + 
   labs(x = 'NTC', y = 'Neg Probe counts / Organism probe counts (%)')
 ```
 
-![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-11-2.png)<!-- -->
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-13-2.png)<!-- -->
 
 #### Geometric Means of negative probes.
-
-**Negative probes** are used to establish the background count level per
-segment. They represent synthetic oligonucleotide probes that are not
-complementary to any known transcript in the organism of interest,
-representing background noise (Non-specific binding, autofluorescence,
-instrument noise, etc).
 
 The calculation of Geometric Mean of negative probes per segment, this
 is done by module (If more than 1 probe panel used, each module
@@ -489,7 +529,7 @@ for(ann in negCols) {
 }
 ```
 
-![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 ``` r
 # detatch neg_geomean columns ahead of aggregateCounts call
@@ -517,7 +557,7 @@ knitr::kable(QC_Summary, caption = "QC Summary Table for each Segment")
 
 QC Summary Table for each Segment
 
-### Filter dataset
+#### Filter dataset
 
 Filter performed so we keep segments that PASS all the QC criteria and
 also have a negative geometric mean greater than 1. In this case, the
@@ -558,8 +598,8 @@ The goal is to remove low performance probes, which can be due to poor
 hybridization, low specificity, or other technical issues. WTA libraries
 have one probe per gene.
 
-A probe should be removed if: **Geometric mean of probe counts across
-segments / geometric mean of all probe counts \< 0.1**
+A probe should be removed if: Geometric mean of probe counts across
+segments / geometric mean of all probe counts \< 0.1
 
 ``` r
 geomxdt <- setBioProbeQCFlags(geomxdt, 
@@ -643,8 +683,8 @@ limit of gene expression per segment. This metric is more stable in
 larger segments, also not great for segments with low negative probe
 counts.
 
-$LOQ=Geometric\ Mean(NegProbe)*Geometric\ SD(NegProbe)^n$ *, where n is
-normally equal to 2.*
+$`LOQ=Geometric\ Mean(NegProbe)*Geometric\ SD(NegProbe)^n`$ *, where n
+is normally equal to 2.*
 
 LOQ with a minimum of 2 as threshold, and the n variable is related to
 the number of SD to be used.
@@ -671,7 +711,7 @@ ggplot(pData(target_data)$LOQ, aes(x = Hs_R_NGS_WTA_v1.0)) + geom_histogram() + 
   labs(y = 'Number of segments', title = 'LOQ in Negative Control Probes per segment')
 ```
 
-![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
 ### 5. Filtering
 
@@ -728,7 +768,7 @@ ggplot(pData(target_data),
          fill = "Segment type")
 ```
 
-![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
 
 In this example, we choose to remove segments with less than 10% of the
 genes detected. Generally, 5-10% detection is a reasonable segment
@@ -755,7 +795,7 @@ ggplot(count_mat, aes(x = Slide, y = n, fill = segment)) +
   theme_bw() + labs(title = 'Samples overview (mouse*condition)') 
 ```
 
-![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
 
 #### Gene detection rate
 
@@ -807,7 +847,7 @@ ggplot(plot_detect, aes(x = as.factor(Freq), y = Rate, fill = Rate)) +
          y = "Genes Detected, % of Panel > LOQ")
 ```
 
-![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
+![](1_geomx_setup_qc_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
 
 We typically set a % Segment cutoff ranging from 5-20% based on the
 biological diversity of our dataset. For this study, we will select 10%
@@ -886,46 +926,46 @@ map(sessionInfo()$otherPkgs, ~.x$Version)
     ## [1] "0.12.5"
     ## 
     ## $SpatialExperiment
-    ## [1] "1.12.0"
+    ## [1] "1.16.0"
     ## 
     ## $SingleCellExperiment
-    ## [1] "1.24.0"
+    ## [1] "1.28.0"
     ## 
     ## $SummarizedExperiment
-    ## [1] "1.32.0"
+    ## [1] "1.36.0"
     ## 
     ## $GenomicRanges
-    ## [1] "1.54.1"
+    ## [1] "1.58.0"
     ## 
     ## $GenomeInfoDb
-    ## [1] "1.38.8"
+    ## [1] "1.42.3"
     ## 
     ## $IRanges
-    ## [1] "2.36.0"
+    ## [1] "2.40.1"
     ## 
     ## $MatrixGenerics
-    ## [1] "1.14.0"
+    ## [1] "1.18.0"
     ## 
     ## $matrixStats
     ## [1] "1.5.0"
     ## 
     ## $GeomxTools
-    ## [1] "3.5.0"
+    ## [1] "3.10.0"
     ## 
     ## $NanoStringNCTools
-    ## [1] "1.10.1"
+    ## [1] "1.14.0"
     ## 
     ## $S4Vectors
-    ## [1] "0.40.2"
+    ## [1] "0.44.0"
     ## 
     ## $Biobase
-    ## [1] "2.62.0"
+    ## [1] "2.66.0"
     ## 
     ## $BiocGenerics
-    ## [1] "0.48.1"
+    ## [1] "0.52.0"
     ## 
     ## $readxl
-    ## [1] "1.4.3"
+    ## [1] "1.4.5"
     ## 
     ## $lubridate
     ## [1] "1.9.4"

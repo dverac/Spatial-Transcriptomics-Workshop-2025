@@ -1,6 +1,5 @@
 ---
-title: "2_Normalization and DE analysis using GeoMxTools"
-subtitle: "Kidney dataset"
+title: "Normalization and DE analysis using GeoMxTools"
 author: "Diana Vera Cruz"
 date: "`r Sys.Date()`"
 output:
@@ -8,6 +7,7 @@ output:
     toc: yes
     toc_float: yes
 ---
+
 
 ## Goals 
 
@@ -121,8 +121,9 @@ pc = pca(assayDataElement(geomx, elt = "log_q"), scale = F, metadata = pData(geo
 
 screeplot(pc, components=1:50)
 
-biplot(pc, lab = NULL, colby = "region", shape = "class", legendPosition = 'right')
-biplot(pc, lab = NULL, x = 'PC3',  y = 'PC4', colby = "region", shape = "class", legendPosition = 'right')
+biplot(pc, lab = NULL, colby = "region", shape = "class", legendPosition = 'right', pointSize = 2)
+biplot(pc, lab = NULL, colby = "slide_name", legendPosition = 'right', pointSize = 2)
+biplot(pc, lab = NULL, x = 'PC3',  y = 'PC4', colby = "region", shape = "class", legendPosition = 'right', pointSize = 2)
 
 ```
 

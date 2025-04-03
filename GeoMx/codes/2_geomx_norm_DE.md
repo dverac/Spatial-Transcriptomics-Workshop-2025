@@ -1,6 +1,6 @@
-# Normalization and DE analysis using `GeoMxTools`
-### Author: Diana Vera Cruz
-### Date: 04/01/2025
+# Normalization and DE analysis using GeoMxTools
+### Diana Vera Cruz
+### 04/03/2025
 
 ## Goals
 
@@ -137,16 +137,22 @@ screeplot(pc, components=1:50)
 ![](2_geomx_norm_DE_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
 ``` r
-biplot(pc, lab = NULL, colby = "region", shape = "class", legendPosition = 'right')
+biplot(pc, lab = NULL, colby = "region", shape = "class", legendPosition = 'right', pointSize = 2)
 ```
 
 ![](2_geomx_norm_DE_files/figure-gfm/unnamed-chunk-2-2.png)<!-- -->
 
 ``` r
-biplot(pc, lab = NULL, x = 'PC3',  y = 'PC4', colby = "region", shape = "class", legendPosition = 'right')
+biplot(pc, lab = NULL, colby = "slide_name", legendPosition = 'right', pointSize = 2)
 ```
 
 ![](2_geomx_norm_DE_files/figure-gfm/unnamed-chunk-2-3.png)<!-- -->
+
+``` r
+biplot(pc, lab = NULL, x = 'PC3',  y = 'PC4', colby = "region", shape = "class", legendPosition = 'right', pointSize = 2)
+```
+
+![](2_geomx_norm_DE_files/figure-gfm/unnamed-chunk-2-4.png)<!-- -->
 
 ### UMAP
 
@@ -343,6 +349,33 @@ map(sessionInfo()$otherPkgs, ~.x$Version)
     ## $ggrepel
     ## [1] "0.9.6"
     ## 
+    ## $ggalluvial
+    ## [1] "0.12.5"
+    ## 
+    ## $SpatialExperiment
+    ## [1] "1.16.0"
+    ## 
+    ## $SingleCellExperiment
+    ## [1] "1.28.0"
+    ## 
+    ## $SummarizedExperiment
+    ## [1] "1.36.0"
+    ## 
+    ## $GenomicRanges
+    ## [1] "1.58.0"
+    ## 
+    ## $GenomeInfoDb
+    ## [1] "1.42.3"
+    ## 
+    ## $IRanges
+    ## [1] "2.40.1"
+    ## 
+    ## $MatrixGenerics
+    ## [1] "1.18.0"
+    ## 
+    ## $matrixStats
+    ## [1] "1.5.0"
+    ## 
     ## $GeomxTools
     ## [1] "3.10.0"
     ## 
@@ -357,6 +390,9 @@ map(sessionInfo()$otherPkgs, ~.x$Version)
     ## 
     ## $BiocGenerics
     ## [1] "0.52.0"
+    ## 
+    ## $readxl
+    ## [1] "1.4.5"
     ## 
     ## $lubridate
     ## [1] "1.9.4"
