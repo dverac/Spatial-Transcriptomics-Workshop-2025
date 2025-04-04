@@ -22,6 +22,6 @@ each section, please start from the separate folders for [Visium](https://github
 
 
 #
-This workshop was developed by members of the [*University of Chicago Center for Reseach Informatics*](https://cri.uchicago.edu/bioinformatics/). The associated markdown files are open access materials distributed under the terms of the Creative Commons Attribution license (CC BY 4.0), which permits unrestricted use, distribution, and reproduction in any medium, provided the original author and source are credited.
+*This workshop was developed by members of the [University of Chicago Center for Reseach Informatics](https://cri.uchicago.edu/bioinformatics/). The associated markdown files are open access materials distributed under the terms of the Creative Commons Attribution license (CC BY 4.0), which permits unrestricted use, distribution, and reproduction in any medium, provided the original author and source are credited.*
 
 
