@@ -38,12 +38,8 @@ instrs = createGiottoInstructions(save_dir = getwd(),
                                   save_plot = TRUE,
                                   show_plot = FALSE,
                                   python_path = '/Users/jason/Software/miniconda3/envs/giotto/bin/pythonw')
-#Load Giotto functions (Optional) that are necessary for simplified spatial correlation analysis. Loading this way is not required if using the standard Giotto workflow for detecting spatially correlated genes.
-source('/Users/jason/Software/Giotto/R/spatial_genes.R')
-source('/Users/jason/Software/Giotto/R/general_help.R')
-source('/Users/jason/Software/Giotto/R/auxiliary_giotto.R')
-source('/Users/jason/Software/Giotto/R/spatial_structures.R')
-source('/Users/jason/Software/Giotto/R/cross_section.R')
+#Load Giotto functions that are necessary for simplified spatial correlation analysis. Loading this way is not required if using the standard Giotto workflow for detecting spatially correlated genes. These functions all come directly from the original Giotto package but are not normally callable.
+source("/Users/jason/Documents/Biocore/Spatial Transcriptomics Workshop 2025/code/giotto_functions.R")
 
 #Load custom functions
 source("/Users/jason/Documents/Biocore/Spatial Transcriptomics Workshop 2025/code/utility_functions.R")
