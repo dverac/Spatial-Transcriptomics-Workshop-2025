@@ -32,7 +32,7 @@ annotation of the original data, and is also available in the same Box folder.
 
 ### Topics covered in Example 2
 #### 1. Merging Data
-#### 2. Distance Analysis with Giotto
+#### 2. Distance Analysis with Giotto  (*Note: This tutorial was based on Giotto v1, and some users have reported errors when using Giotto v4. This will be updated soon*)
 #### 3. Spatial correlations between features
 #### 4. Deconvolution
 #### 5. Spatial correlations between cell types
