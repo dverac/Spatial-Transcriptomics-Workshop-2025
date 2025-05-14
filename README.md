@@ -18,7 +18,7 @@
 
 These materials are provided as part of the workshop *Introduction to Spatial Transcriptomics* held on April 3rd, 2025, at the University of Chicago. The workshop
 covers the basics of analyzing data from 10X Genomics' Visium platform and NanoString's GeoMx platform. For additional details on the example code and datasets used for
-each section, please start from the separate folders for [Visium](https://github.com/CRI-Biocore/Spatial-Transcriptomics-Workshop-2025/tree/main/Visium) or [GeoMx](https://github.com/CRI-Biocore/Spatial-Transcriptomics-Workshop-2025/tree/main/GeoMX).
+each section, please start from the separate folders for [Visium](https://github.com/CRI-Biocore/Spatial-Transcriptomics-Workshop-2025/tree/main/Visium) or [GeoMx](https://github.com/CRI-Biocore/Spatial-Transcriptomics-Workshop-2025/tree/main/GeoMx).
 
 
 #
